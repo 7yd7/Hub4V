@@ -1,0 +1,13 @@
+{
+    "Tabs": [
+        {
+            "Title": "Domino Automation",
+            "Elements": [
+                {
+                    "Type": "Logic",
+                    "Script": "getgenv().PlaceSpeed = 0.5; getgenv().CatchSpeed = 0.1; getgenv().PlaceMode = 'Random High'; Value:AddSlider('PlaceSpeed', {Title = 'Place Delay', Min = 0.01, Max = 5, Default = 0.5, Rounding = 0.01, Callback = function(V) getgenv().PlaceSpeed = V end}); Value:AddDropdown('PlaceMode', {Title = 'Place Position', Values = {'Random High', '0,0,0', 'Forward', 'Max Height'}, Default = 'Random High', Callback = function(V) getgenv().PlaceMode = V end}); Value:AddToggle('AutoPlace', {Title = 'Auto Place', Default = false, Callback = function(V) if V then getgenv().AutoPlace = true; task.spawn(function() local remote = game:GetService('ReplicatedStorage').Remotes.Events.PlaceDomino; local lp = game.Players.LocalPlayer; while getgenv().AutoPlace do local char = lp.Character; local root = char and char:FindFirstChild('HumanoidRootPart'); local cf = CFrame.new(0, 0, 0); local mode = getgenv().PlaceMode; if mode == 'Forward' and root then cf = root.CFrame * CFrame.new(0, 0, -5) elseif mode == 'Max Height' and root then cf = CFrame.new(root.Position.X, 1000, root.Position.Z) elseif mode == 'Random High' and root then local rx, rz = math.random(-50, 50), math.random(-50, 50); cf = CFrame.new(root.Position.X + rx, 1000, root.Position.Z + rz) end; pcall(function() remote:FireServer('Domino', cf) end); task.wait(getgenv().PlaceSpeed or 0.5) end end) else getgenv().AutoPlace = false end end}); Value:AddSlider('CatchSpeed', {Title = 'Catch Delay', Min = 0.01, Max = 5, Default = 0.1, Rounding = 0.01, Callback = function(V) getgenv().CatchSpeed = V end}); Value:AddToggle('AutoCatch', {Title = 'Auto Catch', Default = false, Callback = function(V) if V then getgenv().AutoCatch = true; task.spawn(function() local remote = game:GetService('ReplicatedStorage').Remotes.Events.CatchFailedFall; local lp = game.Players.LocalPlayer; local userIdStr = tostring(lp.UserId); while getgenv().AutoCatch do pcall(function() local dFolder = workspace:FindFirstChild('Dominos'); if dFolder then local userFolder = dFolder:FindFirstChild(userIdStr); if userFolder then for _, item in ipairs(userFolder:GetChildren()) do if item:FindFirstChild('ColorPart') then remote:FireServer(item) end end end end end); task.wait(getgenv().CatchSpeed or 0.1) end end) else getgenv().AutoCatch = false end end})"
+                }
+            ]
+        }
+    ]
+}

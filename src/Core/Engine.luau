@@ -1,0 +1,146 @@
+local HttpService = game:GetService("HttpService")
+local Engine = {}
+
+Engine.ProjectFolder = "7yd7Hub"
+Engine.AssetFolder = Engine.ProjectFolder .. "/Assets/icon"
+
+function Engine.GetBaseUrl()
+    local url = getgenv().NEXS_BASE_URL or ""
+    if url:sub(-1) == "/" then url = url:sub(1, -2) end
+    return url
+end
+
+function Engine.Fetch(path)
+    local baseUrl = Engine.GetBaseUrl()
+    local s, r = pcall(function() return game:HttpGet(baseUrl .. "/" .. path) end)
+    return s and r or nil
+end
+
+function Engine.GetIcon(name)
+    if not name or name == "" then return nil end
+    local lowerName = string.lower(tostring(name))
+    if lowerName:sub(1, 2) == "i-" then
+        local rawName = lowerName:sub(3)
+        local fileName = "i-" .. rawName .. ".png"
+        local localPath = Engine.AssetFolder .. "/" .. fileName
+        local baseUrl = Engine.GetBaseUrl()
+        local fullUrl = baseUrl .. "/Assets/icon/" .. fileName
+
+        pcall(function()
+            if makefolder then
+                if not isfolder("7yd7Hub") then makefolder("7yd7Hub") end
+                if not isfolder("7yd7Hub/Assets") then makefolder("7yd7Hub/Assets") end
+                if not isfolder("7yd7Hub/Assets/icon") then makefolder("7yd7Hub/Assets/icon") end
+            end
+        end)
+
+        local success, content = pcall(function() return game:HttpGet(fullUrl) end)
+        if success and content and content:sub(1, 1) ~= "<" then
+            pcall(function() writefile(localPath, content) end)
+            if typeof(getcustomasset) == "function" then
+                local s, asset = pcall(function() return getcustomasset(localPath) end)
+                task.delay(5, function() pcall(function() if delfile then delfile(localPath) end end) end)
+                return s and asset or nil
+            end
+        end
+        return nil
+    end
+    return name
+end
+
+function Engine.RunAction(code, params, context)
+    if not code or code == "" then return end
+    local scriptFunc, err = loadstring("local Value, Options = ...; " .. code)
+    if not scriptFunc then warn("[7yd7 Engine] Syntax Error: " .. tostring(err)) return end
+    local env = setmetatable({ HttpService = HttpService, Fetch = Engine.Fetch, GetIcon = Engine.GetIcon }, {__index = getfenv(0)})
+    if context then for k, v in pairs(context) do env[k] = v end end
+    setfenv(scriptFunc, env)
+    local val = params and params.Value
+    local opt = params and params.Options or (context and context.Options)
+    if params and params.Sync then pcall(scriptFunc, val, opt)
+    else task.spawn(function() pcall(scriptFunc, val, opt) end) end
+end
+
+local function addElementsToTab(tabObj, elementsArray, adapter, EngineRef)
+    if not elementsArray then return end
+    for _, el in ipairs(elementsArray) do
+        local scriptCode = el.Script
+        if el.Type == "Logic" then EngineRef.RunAction(scriptCode, {Value = tabObj, Sync = true}, adapter:GetContext())
+        elseif el.Type == "Paragraph" then tabObj:AddParagraph({ Title = el.Title or "", Content = el.Content or "" })
+        elseif el.Type == "Button" then tabObj:AddButton({ Id = el.Id, Title = el.Title or "Button", Description = el.Description or "", Callback = function() EngineRef.RunAction(scriptCode, nil, adapter:GetContext()) end })
+        elseif el.Type == "Toggle" then tabObj:AddToggle(el.Id or el.Title, { Title = el.Title or "Toggle", Default = el.Default or false, Callback = function(V) EngineRef.RunAction(scriptCode, {Value = V}, adapter:GetContext()) end })
+        elseif el.Type == "Slider" then tabObj:AddSlider(el.Id or el.Title, { Title = el.Title or "Slider", Default = el.Default or 0, Min = el.Min or 0, Max = el.Max or 100, Rounding = el.Rounding or 1, Callback = function(V) EngineRef.RunAction(scriptCode, {Value = V}, adapter:GetContext()) end })
+        elseif el.Type == "Input" then tabObj:AddInput(el.Id or el.Title, { Title = el.Title or "Input", Default = el.Default or "", Placeholder = el.Placeholder or "", Callback = function(V) EngineRef.RunAction(scriptCode, {Value = V}, adapter:GetContext()) end })
+        elseif el.Type == "Dropdown" then tabObj:AddDropdown(el.Id or el.Title, { Title = el.Title or "Dropdown", Values = el.Values or {}, Default = el.Default or 1, Multi = el.Multi or false, Callback = function(V) EngineRef.RunAction(scriptCode, {Value = V}, adapter:GetContext()) end })
+        elseif el.SectionTitle then tabObj:AddSection({ Title = el.SectionTitle, Icon = el.SectionIcon, SectionPosition = el.SectionPosition })
+        end
+    end
+end
+
+function Engine.LoadAndBuild(adapter)
+    local rawData = Engine.Fetch("Script/Default.json")
+    if not rawData then warn("[7yd7 Engine] Failed to load Default JSON") return end
+
+    local decodeSuccess, data = pcall(function() return HttpService:JSONDecode(rawData) end)
+    if not decodeSuccess then warn("[7yd7 Engine] JSON Parse Error in Default.json") return end
+
+    local winData = data.Window or {}
+    local windowTitle = winData.Title or "7yd7 Hub v4"
+    local windowSub = winData.SubTitle or ""
+
+    pcall(function()
+        local placeName = game:GetService("MarketplaceService"):GetProductInfo(game.PlaceId).Name
+        windowTitle = windowTitle:gsub("{PlaceName}", placeName):gsub("{PlaceId}", tostring(game.PlaceId))
+        windowSub = windowSub:gsub("{PlaceName}", placeName):gsub("{PlaceId}", tostring(game.PlaceId))
+    end)
+    
+    local Window = adapter:CreateWindow({
+        Title = windowTitle, SubTitle = windowSub, TabWidth = winData.TabWidth or 160,
+        Size = winData.Size, Acrylic = winData.Acrylic, Theme = winData.Theme,
+        Logo = Engine.GetIcon(winData.Logo),
+        iconLogo = Engine.GetIcon(winData.iconLogo)
+    })
+
+    for _, tabData in ipairs(data.Tabs or {}) do
+        tabData.Icon = Engine.GetIcon(tabData.Icon)
+        local Tab = Window:AddTab(tabData)
+        addElementsToTab(Tab, tabData.Elements, adapter, Engine)
+    end
+
+    local gamesDataRaw = Engine.Fetch("Script/Games.json")
+    if gamesDataRaw then
+        local sDec, games = pcall(function() return HttpService:JSONDecode(gamesDataRaw) end)
+        if sDec then
+            local currentGame
+            for _, g in pairs(games) do
+                if tostring(g.id) == tostring(game.PlaceId) then currentGame = g break end
+            end
+
+            if currentGame and currentGame.path then
+                local gameConfigRaw = Engine.Fetch("Script/Games/" .. currentGame.path)
+                if gameConfigRaw then
+                    local sDec2, gameData = pcall(function() return HttpService:JSONDecode(gameConfigRaw) end)
+                    if sDec2 and gameData and gameData.Tabs then
+                        local Dashboard = Window:AddTab({ Title = currentGame.name, Icon = Engine.GetIcon("I-game") })
+                        for _, category in ipairs(gameData.Tabs) do
+                            if category.Title then
+                                Dashboard:AddParagraph({ Title = "— " .. category.Title .. " —", Content = "" })
+                            end
+                            addElementsToTab(Dashboard, category.Elements, adapter, Engine)
+
+                            local DedicatedTab = Window:AddTab({
+                                Title = category.Title or "Category",
+                                Icon = Engine.GetIcon(category.Icon)
+                            })
+                            addElementsToTab(DedicatedTab, category.Elements, adapter, Engine)
+                        end
+                    end
+                end
+            end
+        end
+    end
+    
+    if adapter.OnFinished then adapter:OnFinished() end
+end
+
+return Engine

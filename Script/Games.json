@@ -1,0 +1,30 @@
+{
+    "Domino Engine": {
+        "id": "88829164647511",
+        "name": "Domino Engine",
+        "path": "DominoEngine.json",
+        "version": "1.0.0",
+        "status": "1"
+    },
+    "Mine a Brainrot": {
+        "id": "108873585073785",
+        "name": "Mine a Brainrot",
+        "path": "MineaBrainrot.json",
+        "version": "1.0.5",
+        "status": "1"
+    },
+    "Draw A Raft & Set Sail": {
+        "id": "77499336428083",
+        "name": "Draw A Raft & Set Sail",
+        "path": "DrawARaftAndSetSail.json",
+        "version": "1.0.0",
+        "status": "1"
+    },
+    "Dig Legends": {
+        "id": "103571191458177",
+        "name": "Dig Legends ⛏️🏆",
+        "path": "DigLegends.json",
+        "version": "1.0.3",
+        "status": "1"
+    }
+}

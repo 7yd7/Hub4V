@@ -1,0 +1,189 @@
+{
+    "Window": {
+        "Title": "7yd7 Hub v4",
+        "SubTitle": "1.0.3 | {PlaceName}",
+        "TabWidth": 160,
+        "Size": [
+            580,
+            460
+        ],
+        "Acrylic": true,
+        "Theme": "Darker",
+        "Logo": "I-7yd7Logo",
+        "iconLogo": "I-7yd7"
+    },
+    "Tabs": [
+        {
+            "Title": "Main",
+            "Icon": "I-home",
+            "SectionTitle": "Overview",
+            "SectionIcon": "I-info",
+            "Elements": [
+                {
+                    "Type": "Logic",
+                    "Script": "local title = 'Welcome, ' .. game.Players.LocalPlayer.Name; Value:AddParagraph({Title = title, Content = 'Enjoy the 7yd7 Hub Experience.'}); local stats = Value:AddParagraph({Title = 'Session Statistics', Content = 'Loading...'}); task.spawn(function() local startTime = tick(); while task.wait(1) do local elapsed = tick() - startTime; local mins = math.floor(elapsed / 60); local secs = math.floor(elapsed % 60); local fps = math.floor(workspace:GetRealPhysicsFPS()); local ping = math.floor(game:GetService('Stats').Network.ServerStatsItem['Data Ping']:GetValueString():match('%d+')); local playerCount = #game.Players:GetPlayers(); stats:SetDesc('⏳ Uptime: '..string.format('%02d:%02d', mins, secs)..'\\n👥 Players: '..playerCount..'\\n🎮 FPS: '..fps..' | 📡 Ping: '..ping..'ms'); end end)"
+                }
+            ]
+        },
+        {
+            "Title": "Universal",
+            "Icon": "I-globe",
+            "SectionTitle": "Universal Features",
+            "SectionIcon": "I-user",
+            "Elements": [
+                {
+                    "Type": "Paragraph",
+                    "Title": "Movement",
+                    "Content": "Physics & Character Control"
+                },
+                {
+                    "Type": "Logic",
+                    "id": "DynamicPlayerStats",
+                    "Script": "local hum = game.Players.LocalPlayer.Character:FindFirstChild('Humanoid'); local startSpeed = hum and hum.WalkSpeed or 16; local startJump = hum and hum.JumpPower or 50; Value:AddSlider('WalkSpeed', {Title = 'WalkSpeed', Min = 16, Max = 500, Default = startSpeed, Rounding = 0, Callback = function(V) if hum then hum.WalkSpeed = V end end}); Value:AddButton({Title = 'Reset Speed', Description = 'Returns speed to default', Callback = function() if hum then hum.WalkSpeed = 16; Options.WalkSpeed:SetValue(16) end end}); Value:AddSlider('JumpPower', {Title = 'JumpPower', Min = 50, Max = 500, Default = startJump, Rounding = 0, Callback = function(V) if hum then hum.JumpPower = V; hum.UseJumpPower = true end end}); Value:AddButton({Title = 'Reset Jump', Description = 'Returns jump to default', Callback = function() if hum then hum.JumpPower = 50; Options.JumpPower:SetValue(50) end end})"
+                },
+                {
+                    "Type": "Toggle",
+                    "Id": "FlyEnabled",
+                    "Title": "Enable Fly",
+                    "Default": false,
+                    "Script": "local plr = game.Players.LocalPlayer; local mouse = plr:GetMouse(); if Value then if not getgenv().FlySpeed then getgenv().FlySpeed = 50 end; getgenv().FlyConn = game:GetService('RunService').RenderStepped:Connect(function() local root = plr.Character and plr.Character:FindFirstChild('HumanoidRootPart'); if not root then return end; local cam = workspace.CurrentCamera; local bv = root:FindFirstChild('FlyVel') or Instance.new('BodyVelocity', root); bv.Name = 'FlyVel'; bv.MaxForce = Vector3.new(1e9, 1e9, 1e9); local move = Vector3.zero; local uis = game:GetService('UserInputService'); if uis:IsKeyDown(Enum.KeyCode.W) then move = move + cam.CFrame.LookVector end; if uis:IsKeyDown(Enum.KeyCode.S) then move = move - cam.CFrame.LookVector end; if uis:IsKeyDown(Enum.KeyCode.A) then move = move - cam.CFrame.RightVector end; if uis:IsKeyDown(Enum.KeyCode.D) then move = move + cam.CFrame.RightVector end; if uis:IsKeyDown(Enum.KeyCode.Space) then move = move + Vector3.new(0, 1, 0) end; if uis:IsKeyDown(Enum.KeyCode.LeftControl) then move = move - Vector3.new(0, 1, 0) end; bv.Velocity = move * getgenv().FlySpeed; end) else if getgenv().FlyConn then getgenv().FlyConn:Disconnect(); getgenv().FlyConn = nil end; local root = plr.Character and plr.Character:FindFirstChild('HumanoidRootPart'); if root and root:FindFirstChild('FlyVel') then root.FlyVel:Destroy() end end"
+                },
+                {
+                    "Type": "Slider",
+                    "Id": "FlySpeedSlider",
+                    "Title": "Fly Speed",
+                    "Min": 10,
+                    "Max": 200,
+                    "Default": 50,
+                    "Script": "getgenv().FlySpeed = Value"
+                },
+                {
+                    "Type": "Toggle",
+                    "Id": "Noclip",
+                    "Title": "Noclip",
+                    "Default": false,
+                    "Script": "if Value then getgenv().NoclipConn = game:GetService('RunService').Stepped:Connect(function() pcall(function() for _, v in pairs(game.Players.LocalPlayer.Character:GetDescendants()) do if v:IsA('BasePart') and v.CanCollide then v.CanCollide = false end end end) end) else if getgenv().NoclipConn then getgenv().NoclipConn:Disconnect() end end"
+                },
+                {
+                    "Type": "Toggle",
+                    "Id": "InfJump",
+                    "Title": "Infinite Jump",
+                    "Default": false,
+                    "Script": "if Value then getgenv().InfJumpConn = game:GetService('UserInputService').JumpRequest:Connect(function() game.Players.LocalPlayer.Character:FindFirstChildOfClass('Humanoid'):ChangeState('Jumping') end) else if getgenv().InfJumpConn then getgenv().InfJumpConn:Disconnect() end end"
+                },
+                {
+                    "Type": "Slider",
+                    "Id": "Gravity",
+                    "Title": "Gravity",
+                    "Min": 0,
+                    "Max": 200,
+                    "Default": 196,
+                    "Script": "workspace.Gravity = Value"
+                },
+                {
+                    "SectionTitle": "Visuals",
+                    "SectionIcon": "I-eye",
+                    "Type": "Paragraph",
+                    "Title": "Visuals",
+                    "Content": "ESP & Rendering"
+                },
+                {
+                    "Type": "Toggle",
+                    "Id": "ESPHighlight",
+                    "Title": "ESP: Highlight (Chams)",
+                    "Default": false,
+                    "Script": "if Value then getgenv().ESPHighlight = true; task.spawn(function() while getgenv().ESPHighlight do for _, p in pairs(game.Players:GetPlayers()) do if p ~= game.Players.LocalPlayer and p.Character then if not p.Character:FindFirstChild('HL_ESP') then local h = Instance.new('Highlight', p.Character); h.Name = 'HL_ESP'; h.FillColor = Color3.new(1,0,0); h.OutlineColor = Color3.new(1,1,1); end end end; task.wait(1) end end) else getgenv().ESPHighlight = false; for _, p in pairs(game.Players:GetPlayers()) do if p.Character and p.Character:FindFirstChild('HL_ESP') then p.Character.HL_ESP:Destroy() end end end"
+                },
+                {
+                    "Type": "Toggle",
+                    "Id": "ESPName",
+                    "Title": "ESP: Names",
+                    "Default": false,
+                    "Script": "if Value then getgenv().ESPName = true; task.spawn(function() while getgenv().ESPName do for _, p in pairs(game.Players:GetPlayers()) do if p ~= game.Players.LocalPlayer and p.Character and p.Character:FindFirstChild('Head') then if not p.Character.Head:FindFirstChild('Name_ESP') then local bg = Instance.new('BillboardGui', p.Character.Head); bg.Name = 'Name_ESP'; bg.Size = UDim2.new(0,100,0,50); bg.StudsOffset = Vector3.new(0,2,0); bg.AlwaysOnTop = true; local t = Instance.new('TextLabel', bg); t.BackgroundTransparency = 1; t.Size = UDim2.new(1,0,1,0); t.Text = p.Name; t.TextColor3 = Color3.new(1,1,1); t.TextStrokeTransparency = 0; end end end; task.wait(1) end end) else getgenv().ESPName = false; for _, p in pairs(game.Players:GetPlayers()) do if p.Character then for _, v in pairs(p.Character:GetDescendants()) do if v.Name == 'Name_ESP' then v:Destroy() end end end end end"
+                },
+                {
+                    "Type": "Slider",
+                    "Id": "FOV",
+                    "Title": "Field of View",
+                    "Min": 30,
+                    "Max": 120,
+                    "Default": 70,
+                    "Script": "workspace.CurrentCamera.FieldOfView = Value"
+                },
+                {
+                    "Type": "Toggle",
+                    "Id": "FullBright",
+                    "Title": "Fullbright",
+                    "Default": false,
+                    "Script": "if Value then if not getgenv().OldBright then getgenv().OldBright = game.Lighting.Brightness; getgenv().OldAmb = game.Lighting.Ambient end; game.Lighting.Brightness = 2; game.Lighting.Ambient = Color3.new(1, 1, 1) else if getgenv().OldBright then game.Lighting.Brightness = getgenv().OldBright; game.Lighting.Ambient = getgenv().OldAmb end end"
+                },
+                {
+                    "Type": "Paragraph",
+                    "Title": "Utility",
+                    "Content": "Useful Tools"
+                },
+                {
+                    "Type": "Toggle",
+                    "Id": "AntiAFK",
+                    "Title": "Anti-AFK",
+                    "Default": false,
+                    "Script": "if Value then getgenv().antiAfkEnabled = true; spawn(function() local VirtualUser = game:GetService('VirtualUser'); game:GetService('Players').LocalPlayer.Idled:connect(function() if getgenv().antiAfkEnabled then VirtualUser:CaptureController(); VirtualUser:ClickButton2(Vector2.new()); end end) end) else getgenv().antiAfkEnabled = false end"
+                },
+                {
+                    "Type": "Toggle",
+                    "Id": "InstantProximity",
+                    "Title": "Instant Interaction",
+                    "Default": false,
+                    "Script": "if Value then getgenv().ProxConn = workspace.DescendantAdded:Connect(function(v) if v:IsA('ProximityPrompt') then v.HoldDuration = 0 end end); for _, v in pairs(workspace:GetDescendants()) do if v:IsA('ProximityPrompt') then v.HoldDuration = 0 end end else if getgenv().ProxConn then getgenv().ProxConn:Disconnect() end end"
+                },
+                {
+                    "Type": "Button",
+                    "Title": "Reset Character",
+                    "Description": "Force Respawn",
+                    "Script": "game.Players.LocalPlayer.Character:BreakJoints()"
+                }
+            ]
+        },
+        {
+            "Title": "Games",
+            "Icon": "I-link",
+            "SectionTitle": "Overview",
+            "SectionIcon": "I-game",
+            "Elements": [
+                {
+                    "Type": "Paragraph",
+                    "Title": "Game Status Guide\n",
+                    "Content": "🟢 Working (100%)\n🟡 Partial/Updating\n🔴 Broken/Patched"
+                },
+                {
+                    "Type": "Logic",
+                    "Script": "local data = Fetch('Script/Games.json'); if data then local games = HttpService:JSONDecode(data); for _, g in pairs(games) do local st = (g.status == '1' and '🟢') or (g.status == '2' and '🟡') or '🔴'; Value:AddButton({Title = g.name .. ' | ' .. st, Description = 'Version: ' .. (g.version or '1.0.0'), Callback = function() game:GetService('TeleportService'):Teleport(tonumber(g.id)) end}) end end"
+                }
+            ]
+        },
+        {
+            "Title": "Settings",
+            "Icon": "I-settings",
+            "SectionTitle": "Configuration",
+            "Elements": [
+                {
+                    "Type": "Paragraph",
+                    "Title": "Server Management",
+                    "Content": "Connection Tools"
+                },
+                {
+                    "Type": "Button",
+                    "Title": "Rejoin Server",
+                    "Description": "Reconnects to the same server",
+                    "Script": "game:GetService('TeleportService'):Teleport(game.PlaceId, game.Players.LocalPlayer)"
+                },
+                {
+                    "Type": "Button",
+                    "Title": "Server Hop",
+                    "Description": "Finds a different server with players",
+                    "Script": "local Http = game:GetService('HttpService'); local TPS = game:GetService('TeleportService'); local Api = 'https://games.roblox.com/v1/games/'..game.PlaceId..'/servers/Public?sortOrder=Asc&limit=100'; local function ListServers(cursor) local Raw = game:HttpGet(Api .. (cursor and '&cursor='..cursor or '')); return Http:JSONDecode(Raw) end; local Server, Next; repeat local Servers = ListServers(Next); Server = Servers.data[1]; Next = Servers.nextPageCursor; for _, s in ipairs(Servers.data) do if s.playing < s.maxPlayers and s.id ~= game.JobId then Server = s; break end end; until Server; if Server then TPS:TeleportToPlaceInstance(game.PlaceId, Server.id, game.Players.LocalPlayer) end"
+                }
+            ]
+        }
+    ]
+}
