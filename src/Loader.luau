@@ -258,11 +258,11 @@ function Loader.Create(config)
                 local loadingActive = true
                 task.spawn(function()
                     while loadingActive do
-                        TweenService:Create(Loading, TweenInfo.new(0.8, Enum.EasingStyle.Sine, Enum.EasingDirection.InOut), {ImageColor3 = Color3.fromRGB(255, 230, 0)}):Play()
-                        task.wait(0.8)
+                        TweenService:Create(Loading, TweenInfo.new(0.6, Enum.EasingStyle.Sine, Enum.EasingDirection.InOut), {ImageColor3 = Color3.fromRGB(255, 220, 0)}):Play()
+                        task.wait(0.6)
                         if not loadingActive then break end
-                        TweenService:Create(Loading, TweenInfo.new(0.8, Enum.EasingStyle.Sine, Enum.EasingDirection.InOut), {ImageColor3 = Color3.fromRGB(150, 130, 0)}):Play()
-                        task.wait(0.8)
+                        TweenService:Create(Loading, TweenInfo.new(0.6, Enum.EasingStyle.Sine, Enum.EasingDirection.InOut), {ImageColor3 = Color3.fromRGB(255, 255, 255)}):Play()
+                        task.wait(0.6)
                     end
                 end)
 
