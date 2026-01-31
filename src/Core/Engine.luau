@@ -23,23 +23,27 @@ function Engine.GetIcon(name)
         local rawName = lowerName:sub(3)
         local fileName = "i-" .. rawName .. ".png"
         local localPath = Engine.AssetFolder .. "/" .. fileName
-        local baseUrl = Engine.GetBaseUrl()
-        local fullUrl = baseUrl .. "/Assets/icon/" .. fileName
-
+        
         pcall(function()
-            if makefolder then
-                if not isfolder("7yd7Hub") then makefolder("7yd7Hub") end
-                if not isfolder("7yd7Hub/Assets") then makefolder("7yd7Hub/Assets") end
-                if not isfolder("7yd7Hub/Assets/icon") then makefolder("7yd7Hub/Assets/icon") end
-            end
+            if not isfolder("7yd7Hub") then makefolder("7yd7Hub") end
+            if not isfolder("7yd7Hub/Assets") then makefolder("7yd7Hub/Assets") end
+            if not isfolder("7yd7Hub/Assets/icon") then makefolder("7yd7Hub/Assets/icon") end
         end)
 
+        if isfile(localPath) then
+            local s, asset = pcall(function() return getcustomasset(localPath) end)
+            if s and asset then return asset end
+        end
+
+        local baseUrl = Engine.GetBaseUrl()
+        if baseUrl == "" then return nil end 
+        local fullUrl = baseUrl .. "/Assets/icon/" .. fileName
+
         local success, content = pcall(function() return game:HttpGet(fullUrl) end)
-        if success and content and content:sub(1, 1) ~= "<" then
+        if success and content and content:sub(1, 1) ~= "<" and content ~= "" then
             pcall(function() writefile(localPath, content) end)
             if typeof(getcustomasset) == "function" then
                 local s, asset = pcall(function() return getcustomasset(localPath) end)
-                task.delay(5, function() pcall(function() if delfile then delfile(localPath) end end) end)
                 return s and asset or nil
             end
         end
