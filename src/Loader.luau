@@ -143,7 +143,6 @@ function Loader.Create(config)
         Card.BorderSizePixel = 0
         Card.ClipsDescendants = true
         Card.AutoButtonColor = false
-        Card.Image = "rbxassetid://18898582662" 
 
         task.spawn(function()
             local asset = resolveAsset("UI/" .. data.Name .. ".png")
