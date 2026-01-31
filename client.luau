@@ -9,10 +9,12 @@ local function import(path)
 	return loadResult
 end
 
+--[[
 if queue_on_teleport and not getgenv().Nexs_Queued then
 	getgenv().Nexs_Queued = true
 	queue_on_teleport('loadstring(game:HttpGet("' .. BASE_URL .. '/client.luau"))()')
 end
+]]
 
 local Notifications = import("src/notifications.luau")
 getgenv().NexsNotifications = Notifications
@@ -42,5 +44,4 @@ instance = Loader.Create({
             end)
         end
     end
-
 })
