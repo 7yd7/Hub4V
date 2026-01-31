@@ -81,12 +81,71 @@ local function addElementsToTab(tabObj, elementsArray, adapter, EngineRef)
     end
 end
 
+local function collectIcons(tabs, set)
+    if not tabs then return end
+    for _, t in ipairs(tabs) do
+        if t.Icon then set[t.Icon] = true end
+        if t.Elements then
+            for _, el in ipairs(t.Elements) do
+                if el.SectionIcon then set[el.SectionIcon] = true end
+            end
+        end
+    end
+end
+
 function Engine.LoadAndBuild(adapter)
     local rawData = Engine.Fetch("Script/Default.json")
     if not rawData then warn("[7yd7 Engine] Failed to load Default JSON") return end
 
     local decodeSuccess, data = pcall(function() return HttpService:JSONDecode(rawData) end)
     if not decodeSuccess then warn("[7yd7 Engine] JSON Parse Error in Default.json") return end
+
+    local currentGameData = nil
+    local currentGameName = nil
+
+    local gamesDataRaw = Engine.Fetch("Script/Games.json")
+    if gamesDataRaw then
+        local sDec, games = pcall(function() return HttpService:JSONDecode(gamesDataRaw) end)
+        if sDec then
+            local currentGame
+            for _, g in pairs(games) do
+                if tostring(g.id) == tostring(game.PlaceId) then currentGame = g break end
+            end
+
+            if currentGame and currentGame.path then
+                local gameConfigRaw = Engine.Fetch("Script/Games/" .. currentGame.path)
+                if gameConfigRaw then
+                    local sDec2, gData = pcall(function() return HttpService:JSONDecode(gameConfigRaw) end)
+                    if sDec2 and gData then
+                        currentGameData = gData
+                        currentGameName = currentGame.name
+                    end
+                end
+            end
+        end
+    end
+
+    local iconSet = {}
+    if data.Window then
+        if data.Window.Logo then iconSet[data.Window.Logo] = true end
+        if data.Window.iconLogo then iconSet[data.Window.iconLogo] = true end
+    end
+    collectIcons(data.Tabs, iconSet)
+    if currentGameData and currentGameData.Tabs then collectIcons(currentGameData.Tabs, iconSet) end
+
+    local threads = 0
+    for name, _ in pairs(iconSet) do
+        threads = threads + 1
+        task.spawn(function()
+            Engine.GetIcon(name)
+            threads = threads - 1
+        end)
+    end
+
+    if threads > 0 then
+        local start = tick()
+        repeat task.wait() until threads == 0 or (tick() - start) > 10
+    end
 
     local winData = data.Window or {}
     local windowTitle = winData.Title or "7yd7 Hub v4"
@@ -111,36 +170,19 @@ function Engine.LoadAndBuild(adapter)
         addElementsToTab(Tab, tabData.Elements, adapter, Engine)
     end
 
-    local gamesDataRaw = Engine.Fetch("Script/Games.json")
-    if gamesDataRaw then
-        local sDec, games = pcall(function() return HttpService:JSONDecode(gamesDataRaw) end)
-        if sDec then
-            local currentGame
-            for _, g in pairs(games) do
-                if tostring(g.id) == tostring(game.PlaceId) then currentGame = g break end
+    if currentGameData and currentGameData.Tabs then
+        local Dashboard = Window:AddTab({ Title = currentGameName, Icon = Engine.GetIcon("I-game") })
+        for _, category in ipairs(currentGameData.Tabs) do
+            if category.Title then
+                Dashboard:AddParagraph({ Title = "— " .. category.Title .. " —", Content = "" })
             end
+            addElementsToTab(Dashboard, category.Elements, adapter, Engine)
 
-            if currentGame and currentGame.path then
-                local gameConfigRaw = Engine.Fetch("Script/Games/" .. currentGame.path)
-                if gameConfigRaw then
-                    local sDec2, gameData = pcall(function() return HttpService:JSONDecode(gameConfigRaw) end)
-                    if sDec2 and gameData and gameData.Tabs then
-                        local Dashboard = Window:AddTab({ Title = currentGame.name, Icon = Engine.GetIcon("I-game") })
-                        for _, category in ipairs(gameData.Tabs) do
-                            if category.Title then
-                                Dashboard:AddParagraph({ Title = "— " .. category.Title .. " —", Content = "" })
-                            end
-                            addElementsToTab(Dashboard, category.Elements, adapter, Engine)
-
-                            local DedicatedTab = Window:AddTab({
-                                Title = category.Title or "Category",
-                                Icon = Engine.GetIcon(category.Icon)
-                            })
-                            addElementsToTab(DedicatedTab, category.Elements, adapter, Engine)
-                        end
-                    end
-                end
-            end
+            local DedicatedTab = Window:AddTab({
+                Title = category.Title or "Category",
+                Icon = Engine.GetIcon(category.Icon)
+            })
+            addElementsToTab(DedicatedTab, category.Elements, adapter, Engine)
         end
     end
     
