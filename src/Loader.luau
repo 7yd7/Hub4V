@@ -255,10 +255,30 @@ function Loader.Create(config)
         
         if logicFunc then
             task.spawn(function()
-                logicFunc()
+                local loadingActive = true
+                task.spawn(function()
+                    while loadingActive do
+                        TweenService:Create(Loading, TweenInfo.new(0.8, Enum.EasingStyle.Sine, Enum.EasingDirection.InOut), {ImageColor3 = Color3.fromRGB(255, 230, 0)}):Play()
+                        task.wait(0.8)
+                        if not loadingActive then break end
+                        TweenService:Create(Loading, TweenInfo.new(0.8, Enum.EasingStyle.Sine, Enum.EasingDirection.InOut), {ImageColor3 = Color3.fromRGB(150, 130, 0)}):Play()
+                        task.wait(0.8)
+                    end
+                end)
+
+                local success, err = pcall(logicFunc)
+                loadingActive = false
+
+                task.wait(0.1)
+
+                if success then
+                    TweenService:Create(Loading, TweenInfo.new(0.4), {ImageColor3 = Color3.fromRGB(0, 255, 140)}):Play()
+                else
+                    warn("[7yd7 Loader] Logic failed: " .. tostring(err))
+                    TweenService:Create(Loading, TweenInfo.new(0.4), {ImageColor3 = Color3.fromRGB(255, 50, 50)}):Play()
+                end
+                
                 task.wait(0.5)
-                TweenService:Create(Loading, TweenInfo.new(0.4), {ImageColor3 = Color3.fromRGB(0, 255, 140)}):Play()
-                task.wait(0.4)
                 local fade = TweenService:Create(Loading, TweenInfo.new(0.6, Enum.EasingStyle.Quart), {ImageTransparency = 1, Size = UDim2.fromOffset(180, 180)})
                 fade:Play()
                 fade.Completed:Wait()
