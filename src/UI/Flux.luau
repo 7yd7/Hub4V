@@ -1,4 +1,4 @@
-local Flux = loadstring(game:HttpGet"https://raw.githubusercontent.com/dawid-scripts/UI-Libs/main/fluxlib.txt")()
+local Flux = loadstring(game:HttpGet(getgenv().NEXS_BASE_URL .. "/src/Library/Flux.luau"))()
 local Engine = loadstring(game:HttpGet(getgenv().NEXS_BASE_URL .. "/src/Core/Engine.luau"))()
 
 local Adapter = {
@@ -13,8 +13,24 @@ function Adapter:Track(id, element, initialValue)
         Raw = element,
         SetValue = function(self, val)
             self.Value = val
+			if type(element) == "table" then
+				if element.SetValue then
+					element:SetValue(val)
+				elseif element.Change then
+					element:Change(val)
+				elseif element.Select then
+					element:Select(val)
+				end
+			end
         end
     }
+	
+	setmetatable(tracker, {
+		__index = function(t, k)
+			return element[k]
+		end
+	})
+
     self.Options[tostring(id)] = tracker
     return tracker
 end

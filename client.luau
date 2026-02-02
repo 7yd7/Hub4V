@@ -1,4 +1,4 @@
-local BASE_URL = "https://raw.githubusercontent.com/7yd7/Hub4V/Menu/"
+local BASE_URL = "http://172.27.64.1:4000/"
 getgenv().NEXS_BASE_URL = BASE_URL
 
 local function import(path)

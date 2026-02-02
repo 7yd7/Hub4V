@@ -1,4 +1,4 @@
-local Library = loadstring(game:HttpGet("https://raw.githubusercontent.com/3345-c-a-t-s-u-s/NOTHING/main/source.lua"))()
+local Library = loadstring(game:HttpGet(getgenv().NEXS_BASE_URL .. "/src/Library/NOTHING.luau"))()
 local Engine = loadstring(game:HttpGet(getgenv().NEXS_BASE_URL .. "/src/Core/Engine.luau"))()
 
 local Adapter = {
@@ -13,13 +13,35 @@ function Adapter:Track(id, element, initialValue)
         Raw = element,
         SetValue = function(self, val)
             self.Value = val
-            if element and element.Value then
-                element.Value(val)
-            elseif element and element.Set then
-                element.Set(tostring(val))
+            if type(element) == "table" then
+                if element.Value then
+                    element.Value(val)
+                elseif element.Set and type(val) ~= "table" then
+                    element.Set(val)
+                end
             end
         end
     }
+    
+    setmetatable(tracker, {
+        __index = function(t, k)
+            local val = element[k]
+            if type(val) == "function" then
+                 return function(first, ...)
+                     if first == t then
+                         return val(...)
+                     else
+                         return val(first, ...)
+                     end
+                 end
+            end
+            return val
+        end,
+        __newindex = function(t, k, v)
+             element[k] = v
+        end
+    })
+
     self.Options[tostring(id)] = tracker
     return tracker
 end
@@ -66,7 +88,10 @@ function Adapter:AddTab(config)
     function Proxy:AddParagraph(args) 
         local title = args.Title or ""
         local content = args.Content or ""
-        local fullText = (title ~= "" and title .. ": " or "") .. content
+        
+        local function generateFullText(t, c)
+             return (t ~= "" and t .. ": " or "") .. c
+        end
         
         local function splitByLength(text, limit)
             local lines = {}
@@ -77,22 +102,67 @@ function Adapter:AddTab(config)
         end
 
         local segments = {}
-        for _, line in ipairs(fullText:split("\n")) do
+        
+        local fullText = generateFullText(title, content)
+        local initialLines = {}
+         for _, line in ipairs(fullText:split("\n")) do
             if #line > 30 then
                 local chunks = splitByLength(line, 30)
-                for _, chunk in ipairs(chunks) do table.insert(segments, chunk) end
+                for _, chunk in ipairs(chunks) do table.insert(initialLines, chunk) end
             else
-                table.insert(segments, line)
+                table.insert(initialLines, line)
+            end
+        end
+        
+        for i, segmentText in ipairs(initialLines) do
+            local segObj = Proxy.CurrentSection:NewTitle(segmentText)
+            table.insert(segments, segObj)
+        end
+        
+        local function updateAll(newTitle, newContent)
+             local txt = generateFullText(newTitle, newContent)
+             local newLines = {}
+             for _, line in ipairs(txt:split("\n")) do
+                if #line > 30 then
+                    local chunks = splitByLength(line, 30)
+                    for _, chunk in ipairs(chunks) do table.insert(newLines, chunk) end
+                else
+                    table.insert(newLines, line)
+                end
+            end
+            
+            for i, segObj in ipairs(segments) do
+                if newLines[i] then
+                    segObj.Set(newLines[i])
+                    segObj.Visible(true)
+                else
+                    segObj.Visible(false)
+                end
             end
         end
 
-        for i, segment in ipairs(segments) do
-            Proxy.CurrentSection:NewTitle(segment)
+        local wrapper = {}
+        wrapper.SetDesc = function(a, b)
+            if a == wrapper then
+                content = b
+            else
+                content = a
+            end
+            updateAll(title, content)
         end
-        return {
-            SetDesc = function() end, 
-            SetTitle = function() end
-        }
+        
+        wrapper.SetTitle = function(a, b)
+             if a == wrapper then
+                title = b
+            else
+                title = a
+            end
+            updateAll(title, content)
+        end
+        
+        wrapper.Set = wrapper.SetTitle
+        
+        return wrapper
     end
     
     function Proxy:AddButton(args) 
@@ -170,10 +240,14 @@ function Adapter:AddTab(config)
             Default = val,
             Callback = callback
         })
-        tracker = Adapter:Track(id, el, val)
-        tracker.SetValue = function(_, v)
-            pcall(function() el:Refresh(v) end)
+        
+        if el and type(el) == "table" then
+            if not el.Refresh and el.Set then
+                 el.Refresh = el.Set
+            end
         end
+
+        tracker = Adapter:Track(id, el, val)
         return tracker
     end
 

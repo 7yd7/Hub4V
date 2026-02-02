@@ -119,14 +119,11 @@ function Adapter:AddTab(config)
     function Proxy:AddDropdown(id, args)
         local t, o, def, m, cb = tostring(args.Title or "Dropdown"), args.Values or {}, args.Default, args.Multi, args.Callback
         
-        -- Rayfield expects CurrentOption to be a table or string, but consistently using table is safer for recent versions
-        -- Also, handle if def is nil
         local currentOpt = def
         if type(def) == "string" then currentOpt = {def} end 
 
         local tracker
         local function callback(val)
-            -- Rayfield returns a table even for single select in some versions. Unwrap it if Multi is false.
             local out = val
             if not m and type(val) == "table" then
                 out = val[1]
@@ -137,12 +134,12 @@ function Adapter:AddTab(config)
         end
         
         local s, r = pcall(function() return Tab:CreateDropdown({Name = t, Options = o, CurrentOption = currentOpt, MultipleOptions = m, Flag = id, Callback = callback}) end)
-        if not s then s, r = pcall(function() return Tab:CreateDropdown(t, o, def, m, id, callback) end) end -- Fallback for older sig
+        if not s then s, r = pcall(function() return Tab:CreateDropdown(t, o, def, m, id, callback) end) end
         
         tracker = Adapter:Track(id, r, def)
         tracker.SetValues = function(_, v) 
-            if r.Refresh then r:Refresh(o, true) -- Update options logic if needed, usually Rayfield Refresh takes (List, Clear)
-            elseif r.Set then r:Set(currentOpt) end -- Reset to default or handle usage
+            if r.Refresh then r:Refresh(o, true)
+            elseif r.Set then r:Set(currentOpt) end
         end
         return tracker
     end
