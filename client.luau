@@ -1,4 +1,4 @@
-local BASE_URL = "https://raw.githubusercontent.com/7yd7/Hub4V/Menu/"
+local BASE_URL = "http://192.168.100.127:4000/"
 getgenv().NEXS_BASE_URL = BASE_URL
 
 local function import(path)
@@ -44,5 +44,4 @@ instance = Loader.Create({
             end)
         end
     end
-
 })

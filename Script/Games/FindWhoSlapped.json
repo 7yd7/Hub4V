@@ -1,0 +1,25 @@
+{
+    "Tabs": [
+        {
+            "Title": "AutoMatic",
+            "Elements": [
+                {
+                    "Type": "Logic",
+                    "Script": "Value:AddButton({Title = 'Hit Perfect', Callback = function() local events = game:GetService('ReplicatedStorage'):FindFirstChild('Events'); local hitEvent = events and events:FindFirstChild('Hit'); if hitEvent then hitEvent:FireServer(math.huge) end end})"
+                },
+                {
+                    "Type": "Logic",
+                    "Script": "Value:AddToggle('AutoSlap', {Title = 'Auto Hit Perfect', Default = false, Callback = function(V) getgenv().AutoSlap = V; if V then task.spawn(function() local lp = game:GetService('Players').LocalPlayer; local events = game:GetService('ReplicatedStorage'):FindFirstChild('Events'); local hitEvent = events and events:FindFirstChild('Hit'); local lastHitState = false; local hitFired = false; while getgenv().AutoSlap do local hitVisible = false; pcall(function() if lp.PlayerGui.Frames.InGame.Hit.Visible then hitVisible = true end end); if hitVisible then if not lastHitState then hitFired = false end; if not hitFired and lp:GetAttribute('InArena') == true and lp:GetAttribute('InGame') == true then if hitEvent then hitEvent:FireServer(math.huge); hitFired = true end end else hitFired = false end; lastHitState = hitVisible; task.wait() end end) end end})"
+                },
+                {
+                    "Type": "Logic",
+                    "Script": "Value:AddToggle('AutoDodge', {Title = 'Auto Dodge', Default = false, Callback = function(V) getgenv().AutoDodge = V; if V then task.spawn(function() local lp = game:GetService('Players').LocalPlayer; while getgenv().AutoDodge do pcall(function() local dodge = lp.PlayerGui.Frames.InGame.Dodge; if dodge.Visible then firesignal(dodge.MouseButton1Up) end end); task.wait() end end) end end})"
+                },
+                {
+                    "Type": "Logic",
+                    "Script": "getgenv().ChooseDelay = 0; Value:AddSlider('ChooseDelay', {Title = 'Choose Delay', Min = 0, Max = 10, Default = 0, Rounding = 1, Callback = function(V) getgenv().ChooseDelay = V end}); local statusPara = Value:AddParagraph({Title = 'Slapper Status', Content = 'No slapper chosen yet.'}); Value:AddToggle('AutoChooseSlapper', {Title = 'Auto Choose Slapper', Default = false, Callback = function(V) getgenv().AutoChooseSlapper = V; if V then task.spawn(function() local lp = game:GetService('Players').LocalPlayer; local events = game:GetService('ReplicatedStorage'):FindFirstChild('Events'); local chooseEvent = events and events:FindFirstChild('ChooseSlapper'); local lastGuiState = false; local firedThisTime = false; while getgenv().AutoChooseSlapper do local guiVisible = false; local slappersGui = nil; pcall(function() slappersGui = lp.PlayerGui.Frames.InGame.Slappers; if slappersGui.Visible then guiVisible = true end end); if guiVisible then if not lastGuiState then firedThisTime = false end; if not firedThisTime then if lp:GetAttribute('InArena') == true and lp:GetAttribute('InGame') == true then local arenaName = lp:GetAttribute('Arena'); local arena = workspace.Arenas:FindFirstChild(tostring(arenaName)); local chair = arena and arena:FindFirstChild('Chair'); local sitting = false; if chair then if chair:IsA('Seat') or chair:IsA('VehicleSeat') then if chair.Occupant and chair.Occupant.Parent == lp.Character then sitting = true end else local hrp = lp.Character and lp.Character:FindFirstChild('HumanoidRootPart'); if hrp then local pos = chair.CFrame:PointToObjectSpace(hrp.Position); if math.abs(pos.X) <= chair.Size.X/2 and math.abs(pos.Y) <= chair.Size.Y/2 and math.abs(pos.Z) <= chair.Size.Z/2 then sitting = true end end end end; if sitting then local hitbox = arena:FindFirstChild('SlapLocation'); if hitbox then for _, p in ipairs(game.Players:GetPlayers()) do if p ~= lp and p.Character and p.Character:FindFirstChild('HumanoidRootPart') then local hrp = p.Character.HumanoidRootPart; local pos = hitbox.CFrame:PointToObjectSpace(hrp.Position); if math.abs(pos.X) <= hitbox.Size.X/2 and math.abs(pos.Y) <= hitbox.Size.Y/2 and math.abs(pos.Z) <= hitbox.Size.Z/2 then firedThisTime = true; statusPara:SetDesc('Slapper chosen: ' .. p.Name); if getgenv().ChooseDelay > 0 then task.wait(getgenv().ChooseDelay) end; if getgenv().AutoChooseSlapper and chooseEvent then chooseEvent:FireServer(p.Name) end break end end end end else if slappersGui and slappersGui.Visible then slappersGui.Visible = false end end end end else firedThisTime = false end; lastGuiState = guiVisible; task.wait(0.1) end end) end end})"
+                }
+            ]
+        }
+    ]
+}
