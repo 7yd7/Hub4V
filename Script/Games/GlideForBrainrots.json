@@ -1,0 +1,67 @@
+{
+    "Tabs": [
+        {
+            "Title": "Auto Matic",
+            "Icon": "",
+            "Elements": [
+                {
+                    "Type": "Section",
+                    "Title": "Steal",
+                    "Icon": "I-settings"
+                },
+                {
+                    "Type": "Logic",
+                    "id": "StealLogic",
+                    "Script": "local lp = game.Players.LocalPlayer; local zonesFolder = workspace:FindFirstChild('Zones'); local rarityValues = {'All'}; if zonesFolder then for _, v in ipairs(zonesFolder:GetChildren()) do table.insert(rarityValues, v.Name) end end; getgenv().SelectedRarity = 'All'; getgenv().SelectedItemNames = {'All'}; getgenv().AutoStealEnabled = false; local function getPetRarityMap() local map = {}; local scroll = lp.PlayerGui:FindFirstChild('HUD') and lp.PlayerGui.HUD:FindFirstChild('Index') and lp.PlayerGui.HUD.Index:FindFirstChild('Main') and lp.PlayerGui.HUD.Index.Main:FindFirstChild('Scroll'); if scroll then for _, item in ipairs(scroll:GetChildren()) do if item.Name ~= 'UIGridLayout' and (item:IsA('Frame') or item:IsA('ImageLabel')) then local itemRarity = item:GetAttribute('Rarity'); if itemRarity then map[item.Name] = itemRarity end end end end; return map end; local function getFilteredItems() local items = {'All'}; local scroll = lp.PlayerGui:FindFirstChild('HUD') and lp.PlayerGui.HUD:FindFirstChild('Index') and lp.PlayerGui.HUD.Index:FindFirstChild('Main') and lp.PlayerGui.HUD.Index.Main:FindFirstChild('Scroll'); if not scroll then return items end; local selectedRarity = getgenv().SelectedRarity; local isAllRarity = (selectedRarity == 'All'); for _, item in ipairs(scroll:GetChildren()) do if item.Name ~= 'UIGridLayout' and (item:IsA('Frame') or item:IsA('ImageLabel')) then local itemRarity = item:GetAttribute('Rarity'); if isAllRarity or itemRarity == selectedRarity then table.insert(items, item.Name) end end end; return items end; local function isItemSelected(name) if not name or name == '' then return false end; local rarityMap = getPetRarityMap(); local selectedRarity = getgenv().SelectedRarity; if selectedRarity ~= 'All' then if rarityMap[name] ~= selectedRarity then return false end end; local selected = getgenv().SelectedItemNames; if not selected then return false end; if type(selected) == 'string' then return selected == 'All' or selected == name end; local hasSpecific = false; local foundMatch = false; for k, v in pairs(selected) do local val = (type(k) == 'number' and v or k); if val ~= 'All' then hasSpecific = true end; if val == name then foundMatch = true end; if type(v) == 'boolean' and v and k == name then foundMatch = true end end; if hasSpecific then return foundMatch end; for _, v in pairs(selected) do if v == 'All' then return true end end; return false end; local rarityDropdown = Value:AddDropdown('RaritySelector', {Title = 'Select Rarity', Values = rarityValues, Default = 'All', Multi = false, Callback = function(V) getgenv().SelectedRarity = V; local newItems = getFilteredItems(); if Options.ItemSelector then Options.ItemSelector:SetValues(newItems) end end}); local itemDropdown = Value:AddDropdown('ItemSelector', {Title = 'Select Items', Values = getFilteredItems(), Default = {'All'}, Multi = true, Callback = function(V) getgenv().SelectedItemNames = V end}); Value:AddToggle('AutoStealToggle', {Title = 'Auto Steal', Default = false, Callback = function(V) getgenv().AutoStealEnabled = V; if V then task.spawn(function() local depositPos = Vector3.new(-165, 2, -365); while getgenv().AutoStealEnabled do pcall(function() local lifting = lp:GetAttribute('Lifting'); if lifting and lifting ~= '' and lifting ~= '[]' then local char = lp.Character; local root = char and char:FindFirstChild('HumanoidRootPart'); if root then root.CFrame = CFrame.new(depositPos); repeat task.wait(0.1); if not getgenv().AutoStealEnabled then break end; lifting = lp:GetAttribute('Lifting'); until not getgenv().AutoStealEnabled or (not lifting or lifting == '' or lifting == '[]') end end; if not getgenv().AutoStealEnabled then return end; local container = workspace:FindFirstChild('StealableItems'); if container then local items = container:GetChildren(); for _, item in ipairs(items) do if not getgenv().AutoStealEnabled then break end; local petName = item:GetAttribute('PetName'); if isItemSelected(petName) then local hitbox = item:FindFirstChild('Hitbox'); local prompt = hitbox and hitbox:FindFirstChild('InGameStealPrompt'); if prompt and prompt:IsA('ProximityPrompt') then local function getChar() return lp.Character or lp.CharacterAdded:Wait() end; local function getRoot() local c = getChar(); return c and c:FindFirstChild('HumanoidRootPart') end; local root = getRoot(); if root then while getgenv().AutoStealEnabled and item.Parent == container do root = getRoot(); if not root then task.wait(0.5); continue end; root.CFrame = item:GetPivot(); task.wait(0.4); lifting = lp:GetAttribute('Lifting'); if lifting and lifting ~= '' and lifting ~= '[]' then break end; fireproximityprompt(prompt); task.wait(0.1) end; lifting = lp:GetAttribute('Lifting'); if lifting and lifting ~= '' and lifting ~= '[]' then root = getRoot(); if root then root.CFrame = CFrame.new(depositPos); repeat task.wait(0.1); if not getgenv().AutoStealEnabled then break end; lifting = lp:GetAttribute('Lifting'); until not getgenv().AutoStealEnabled or (not lifting or lifting == '' or lifting == '[]') end end end end end end end end); task.wait(0.1) end end) end end})"
+                },
+                {
+                    "Type": "Section",
+                    "Title": "Coin & Collect",
+                    "Icon": "I-settings"
+                },
+                {
+                    "Type": "Logic",
+                    "id": "CoinLogic",
+                    "Script": "getgenv().AutoCoinEnabled = false; getgenv().AutoCollectEnabled = false; Value:AddToggle('AutoCoin', {Title = 'Auto Coin', Default = false, Callback = function(V) getgenv().AutoCoinEnabled = V; if V then task.spawn(function() local lp = game.Players.LocalPlayer; local function getChar() return lp.Character or lp.CharacterAdded:Wait() end; local function getRoot() local c = getChar(); return c and c:FindFirstChild('HumanoidRootPart') end; while getgenv().AutoCoinEnabled do pcall(function() local holder = workspace:FindFirstChild('CoinHolder'); if holder then local coins = holder:GetChildren(); for _, coin in ipairs(coins) do if not getgenv().AutoCoinEnabled then break end; local root = getRoot(); if root then while getgenv().AutoCoinEnabled and coin.Parent == holder do root = getRoot(); if not root then task.wait(0.5); continue end; local pivot = coin:GetPivot(); root.CFrame = pivot * CFrame.new(0, 0.5, -5); task.wait(0.2); if not getgenv().AutoCoinEnabled or coin.Parent ~= holder then break end; root.CFrame = pivot * CFrame.new(0, 0.5, 0); task.wait(0.1) end end end end end); task.wait(0.5) end end) end end}); Value:AddToggle('AutoCollect', {Title = 'Auto Collect', Default = false, Callback = function(V) getgenv().AutoCollectEnabled = V; if V then task.spawn(function() local lp = game.Players.LocalPlayer; local function getChar() return lp.Character or lp.CharacterAdded:Wait() end; local function getRoot() local c = getChar(); return c and c:FindFirstChild('HumanoidRootPart') end; while getgenv().AutoCollectEnabled do pcall(function() local plots = workspace:FindFirstChild('Plots'); if plots then local myPlot = nil; for _, plot in ipairs(plots:GetChildren()) do if plot:GetAttribute('Owner') == lp.Name then myPlot = plot; break end end; if myPlot then local items = myPlot:FindFirstChild('Items'); if items then for _, item in ipairs(items:GetChildren()) do if item:GetAttribute('PetID') then local pad = item:FindFirstChild('CollectPad'); if pad and pad:FindFirstChild('TouchInterest') and getRoot() then firetouchinterest(getRoot(), pad, 0); task.wait(); firetouchinterest(getRoot(), pad, 1) end end end end end end end); task.wait(1) end end) end end})"
+                }
+            ]
+        },
+        {
+            "Title": "Shop",
+            "Icon": "",
+            "Elements": [
+                {
+                    "Type": "Logic",
+                    "id": "BuySpeedLogic",
+                    "Script": "getgenv().BuySpeedAmount = 1; local updatingInput = false; Value:AddInput('BuySpeedInput', {Title = 'Amount (1-10)', Default = '1', Placeholder = '1-10...', Numeric = true, Finished = false, Callback = function(V) if updatingInput then return end; local n = tonumber(V); if n then n = math.floor(n); n = math.clamp(n, 1, 10); if tostring(n) ~= V then updatingInput = true; if Options.BuySpeedInput then Options.BuySpeedInput:SetValue(tostring(n)) end; updatingInput = false end; getgenv().BuySpeedAmount = n else getgenv().BuySpeedAmount = 1 end end}); Value:AddButton({Title = 'Buy Speed', Callback = function() local amt = getgenv().BuySpeedAmount; game:GetService('ReplicatedStorage').Remotes.BuySpeed:FireServer(amt) end})"
+                },
+                {
+                    "Type": "Logic",
+                    "id": "BuyCarryLogic",
+                    "Script": "Value:AddButton({Title = 'Buy Carry', Callback = function() game:GetService('ReplicatedStorage').Remotes.BuyCarry:FireServer() end})"
+                },
+                {
+                    "Type": "Section",
+                    "Title": "Auto Open Crate",
+                    "Icon": "I-package"
+                },
+                {
+                    "Type": "Logic",
+                    "id": "AutoCrateLogic",
+                    "Script": "local crateFolder = game:GetService('ReplicatedStorage'):FindFirstChild('Storage') and game:GetService('ReplicatedStorage').Storage:FindFirstChild('Crates'); local crateNames = {}; if crateFolder then for _, v in ipairs(crateFolder:GetChildren()) do table.insert(crateNames, v.Name) end end; getgenv().SelectedCrate = crateNames[1] or 'None'; getgenv().AutoCrateEnabled = false; Value:AddDropdown('CrateSelector', {Title = 'Select Crate', Values = crateNames, Default = getgenv().SelectedCrate, Multi = false, Callback = function(V) getgenv().SelectedCrate = V end}); Value:AddToggle('AutoCrate', {Title = 'Auto Open Crate', Default = false, Callback = function(V) getgenv().AutoCrateEnabled = V; if V then task.spawn(function() while getgenv().AutoCrateEnabled do pcall(function() game:GetService('ReplicatedStorage').Remotes.OpenCrate:InvokeServer(getgenv().SelectedCrate) end); task.wait(0.1) end end) end end})"
+                }
+            ]
+        },
+        {
+            "Title": "More",
+            "Icon": "",
+            "Elements": [
+                {
+                    "Type": "Logic",
+                    "id": "MoreLogic",
+                    "Script": "getgenv().DeleteDisasterEnabled = false; Value:AddToggle('DeleteDisaster', {Title = 'Delete Disaster', Default = false, Callback = function(V) getgenv().DeleteDisasterEnabled = V; if V then task.spawn(function() while getgenv().DeleteDisasterEnabled do pcall(function() local folder = workspace:FindFirstChild('DisasterItems'); if folder then for _, item in ipairs(folder:GetChildren()) do item:Destroy() end end end); task.wait(0.5) end end) end end})"
+                }
+            ]
+        }
+    ]
+}

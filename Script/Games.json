@@ -6,6 +6,13 @@
         "version": "1.0.0",
         "status": "1"
     },
+    "Glide for Brainrots": {
+        "id": "106685450523667",
+        "name": "Glide for Brainrots",
+        "path": "GlideForBrainrots.json",
+        "version": "1.0.0",
+        "status": "1"
+    },
     "Mine a Brainrot": {
         "id": "108873585073785",
         "name": "Mine a Brainrot",
@@ -18,6 +25,13 @@
         "name": "Dig Legends ⛏️🏆",
         "path": "DigLegends.json",
         "version": "1.0.3",
+        "status": "1"
+    },
+    "⛏️ Break a Lucky Block!": {
+        "id": "124311897657957",
+        "name": "⛏️ Break a Lucky Block!",
+        "path": "BreakALuckyBlock.json",
+        "version": "1.0.2",
         "status": "1"
     },
     "Find Who Slapped": {

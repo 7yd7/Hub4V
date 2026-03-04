@@ -1,7 +1,7 @@
 {
     "Window": {
         "Title": "7yd7 Hub v4",
-        "SubTitle": "1.0.3 | {PlaceName}",
+        "SubTitle": "1.0.4 | {PlaceName}",
         "TabWidth": 160,
         "Size": [
             580,
@@ -16,9 +16,12 @@
         {
             "Title": "Main",
             "Icon": "I-home",
-            "SectionTitle": "Overview",
-            "SectionIcon": "I-info",
             "Elements": [
+                {
+                    "Type": "Section",
+                    "Title": "Session Information",
+                    "Icon": "I-info"
+                },
                 {
                     "Type": "Logic",
                     "Script": "local title = 'Welcome, ' .. game.Players.LocalPlayer.Name; Value:AddParagraph({Title = title, Content = 'Enjoy the 7yd7 Hub Experience.'}); local stats = Value:AddParagraph({Title = 'Session Statistics', Content = 'Loading...'}); task.spawn(function() local startTime = tick(); while task.wait(1) do local elapsed = tick() - startTime; local mins = math.floor(elapsed / 60); local secs = math.floor(elapsed % 60); local fps = math.floor(workspace:GetRealPhysicsFPS()); local ping = math.floor(game:GetService('Stats').Network.ServerStatsItem['Data Ping']:GetValueString():match('%d+')); local playerCount = #game.Players:GetPlayers(); stats:SetDesc('⏳ Uptime: '..string.format('%02d:%02d', mins, secs)..'\\n👥 Players: '..playerCount..'\\n🎮 FPS: '..fps..' | 📡 Ping: '..ping..'ms'); end end)"
@@ -28,13 +31,11 @@
         {
             "Title": "Universal",
             "Icon": "I-globe",
-            "SectionTitle": "Universal Features",
-            "SectionIcon": "I-user",
             "Elements": [
                 {
-                    "Type": "Paragraph",
-                    "Title": "Movement",
-                    "Content": "Physics & Character Control"
+                    "Type": "Section",
+                    "Title": "Character & Movement",
+                    "Icon": "I-user"
                 },
                 {
                     "Type": "Logic",
@@ -81,11 +82,9 @@
                     "Script": "workspace.Gravity = Value"
                 },
                 {
-                    "SectionTitle": "Visuals",
-                    "SectionIcon": "I-eye",
-                    "Type": "Paragraph",
-                    "Title": "Visuals",
-                    "Content": "ESP & Rendering"
+                    "Type": "Section",
+                    "Title": "Visuals & ESP",
+                    "Icon": "I-eye"
                 },
                 {
                     "Type": "Toggle",
@@ -118,9 +117,9 @@
                     "Script": "if Value then if not getgenv().OldBright then getgenv().OldBright = game.Lighting.Brightness; getgenv().OldAmb = game.Lighting.Ambient end; game.Lighting.Brightness = 2; game.Lighting.Ambient = Color3.new(1, 1, 1) else if getgenv().OldBright then game.Lighting.Brightness = getgenv().OldBright; game.Lighting.Ambient = getgenv().OldAmb end end"
                 },
                 {
-                    "Type": "Paragraph",
-                    "Title": "Utility",
-                    "Content": "Useful Tools"
+                    "Type": "Section",
+                    "Title": "Utility Tools",
+                    "Icon": "I-settings"
                 },
                 {
                     "Type": "Toggle",
@@ -147,9 +146,12 @@
         {
             "Title": "Games",
             "Icon": "I-link",
-            "SectionTitle": "Overview",
-            "SectionIcon": "I-game",
             "Elements": [
+                {
+                    "Type": "Section",
+                    "Title": "Game Selector",
+                    "Icon": "I-game"
+                },
                 {
                     "Type": "Paragraph",
                     "Title": "Game Status Guide\n",
@@ -164,12 +166,11 @@
         {
             "Title": "Settings",
             "Icon": "I-settings",
-            "SectionTitle": "Configuration",
             "Elements": [
                 {
-                    "Type": "Paragraph",
+                    "Type": "Section",
                     "Title": "Server Management",
-                    "Content": "Connection Tools"
+                    "Icon": "I-settings"
                 },
                 {
                     "Type": "Button",

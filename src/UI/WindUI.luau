@@ -63,13 +63,32 @@ function Adapter:AddTab(config)
     })
 
     local activeContainer = Tab
-    if config.SectionTitleFi then
+    if config.SectionTitle or config.SectionTitleFi then
         activeContainer = Tab:Section({
-            Title = config.SectionTitleFi,
+            Title = config.SectionTitle or config.SectionTitleFi,
         })
     end
 
     local Proxy = {}
+
+    function Proxy:AddSection(...)
+        local args = {...}
+        local title, textSize
+        if type(args[1]) == "table" then
+            title = args[1].Title or args[1][1]
+            textSize = args[1].TextSize or 16
+        else
+            title = args[1]
+            textSize = 16
+        end
+        
+        local section = Tab:Section({
+            Title = title,
+            TextSize = textSize
+        })
+        activeContainer = section
+        return section
+    end
     
     function Proxy:AddParagraph(el)
         return activeContainer:Paragraph({

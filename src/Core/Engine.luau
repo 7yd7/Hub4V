@@ -69,6 +69,8 @@ local function addElementsToTab(tabObj, elementsArray, adapter, EngineRef)
     if not elementsArray then return end
     for _, el in ipairs(elementsArray) do
         local scriptCode = el.Script
+        if el.SectionTitle then tabObj:AddSection({ Title = el.SectionTitle, Icon = EngineRef.GetIcon(el.SectionIcon), SectionPosition = el.SectionPosition }) end
+
         if el.Type == "Logic" then EngineRef.RunAction(scriptCode, {Value = tabObj, Sync = true}, adapter:GetContext())
         elseif el.Type == "Paragraph" then tabObj:AddParagraph({ Title = el.Title or "", Content = el.Content or "" })
         elseif el.Type == "Button" then tabObj:AddButton({ Id = el.Id, Title = el.Title or "Button", Description = el.Description or "", Callback = function() EngineRef.RunAction(scriptCode, nil, adapter:GetContext()) end })
@@ -76,7 +78,7 @@ local function addElementsToTab(tabObj, elementsArray, adapter, EngineRef)
         elseif el.Type == "Slider" then tabObj:AddSlider(el.Id or el.Title, { Title = el.Title or "Slider", Default = el.Default or 0, Min = el.Min or 0, Max = el.Max or 100, Rounding = el.Rounding or 1, Callback = function(V) EngineRef.RunAction(scriptCode, {Value = V}, adapter:GetContext()) end })
         elseif el.Type == "Input" then tabObj:AddInput(el.Id or el.Title, { Title = el.Title or "Input", Default = el.Default or "", Placeholder = el.Placeholder or "", Callback = function(V) EngineRef.RunAction(scriptCode, {Value = V}, adapter:GetContext()) end })
         elseif el.Type == "Dropdown" then tabObj:AddDropdown(el.Id or el.Title, { Title = el.Title or "Dropdown", Values = el.Values or {}, Default = el.Default or 1, Multi = el.Multi or false, Callback = function(V) EngineRef.RunAction(scriptCode, {Value = V}, adapter:GetContext()) end })
-        elseif el.SectionTitle then tabObj:AddSection({ Title = el.SectionTitle, Icon = el.SectionIcon, SectionPosition = el.SectionPosition })
+        elseif el.Type == "Section" then tabObj:AddSection({ Title = el.Title, Icon = EngineRef.GetIcon(el.Icon), SectionPosition = el.SectionPosition })
         end
     end
 end
@@ -88,6 +90,7 @@ local function collectIcons(tabs, set)
         if t.Elements then
             for _, el in ipairs(t.Elements) do
                 if el.SectionIcon then set[el.SectionIcon] = true end
+                if el.Type == "Section" and el.Icon then set[el.Icon] = true end
             end
         end
     end

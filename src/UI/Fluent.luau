@@ -75,6 +75,18 @@ function Adapter:AddTab(config)
         Adapter.Options[id] = i
         return i
     end
+    function Proxy:AddSection(...)
+        local args = {...}
+        local title, icon
+        if type(args[1]) == "table" then
+            title = args[1].Title or args[1][1]
+            icon = args[1].Icon or args[1][2]
+        else
+            title = args[1]
+            icon = args[2]
+        end
+        return Tab:AddSection(title, icon)
+    end
     function Proxy:AddDropdown(id, el)
         local d = Tab:AddDropdown(id, { Title = el.Title, Values = el.Values, Default = el.Default, Multi = el.Multi, Callback = el.Callback })
         Adapter.Options[id] = d
