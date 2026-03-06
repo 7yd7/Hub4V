@@ -1,0 +1,62 @@
+{
+    "Tabs": [
+        {
+            "Title": "Auto Matic",
+            "Icon": "",
+            "Elements": [
+                {
+                    "Type": "Section",
+                    "Title": "Farm Settings",
+                    "Icon": "I-settings"
+                },
+                {
+                    "Type": "Logic",
+                    "id": "AutoFarmLogic",
+                    "Script": "local lp = game.Players.LocalPlayer; local zonesFolder = workspace:FindFirstChild('Zones'); local zoneValues = {'All'}; if zonesFolder then for _, v in ipairs(zonesFolder:GetChildren()) do table.insert(zoneValues, v.Name) end end; getgenv().SelectedZone = 'All'; getgenv().SelectedItemNames = {'All'}; getgenv().AutoFarmEnabled = false; local function getFilteredItems() local items = {'All'}; local gui = lp.PlayerGui:FindFirstChild('GUI'); local frames = gui and gui:FindFirstChild('Frames'); local index = frames and frames:FindFirstChild('Index'); local scroll = index and index:FindFirstChild('Scrolling'); if not scroll then return items end; local selectedZone = getgenv().SelectedZone; for _, item in ipairs(scroll:GetChildren()) do if item.Name ~= 'Grid' and not item:IsA('UIGridLayout') and not item:IsA('UIListLayout') and not item:IsA('UIPadding') then if selectedZone == 'All' then table.insert(items, item.Name) else local rarityLabel = item:FindFirstChild('Rarity'); local rarityText = rarityLabel and rarityLabel:IsA('TextLabel') and rarityLabel.Text or nil; if rarityText and rarityText:gsub('^%s*(.-)%s*$', '%1') == selectedZone then table.insert(items, item.Name) end end end end; return items end; local itemDrop; Value:AddDropdown('ZoneSelector', {Title = 'Select Zone', Values = zoneValues, Default = 'All', Multi = false, Callback = function(V) getgenv().SelectedZone = V; local newItems = getFilteredItems(); if itemDrop then pcall(function() itemDrop:SetValues(newItems) end) end; getgenv().SelectedItemNames = {'All'} end}); itemDrop = Value:AddDropdown('ItemSelector', {Title = 'Select Items', Values = getFilteredItems(), Default = {'All'}, Multi = true, Callback = function(V) getgenv().SelectedItemNames = V end}); local function isItemSelected(name) if not name or name == '' then return false end; local selected = getgenv().SelectedItemNames; if not selected then return false end; if type(selected) == 'string' then return selected == 'All' or selected == name end; local hasSpecific = false; local foundMatch = false; for k, v in pairs(selected) do local val = (type(k) == 'number' and v or k); if val ~= 'All' then hasSpecific = true end; if val == name or (type(v) == 'boolean' and v and k == name) then foundMatch = true end end; if hasSpecific then return foundMatch end; for _, v in pairs(selected) do if v == 'All' then return true end end; return false end; local function getChar() return lp.Character or lp.CharacterAdded:Wait() end; local function getRoot() local c = getChar(); return c and c:FindFirstChild('HumanoidRootPart') end; local function isInsideZone(zonePart) local root = getRoot(); if not root or not zonePart then return false end; local pos = root.Position; local cf = zonePart.CFrame; local size = zonePart.Size / 2; local rel = cf:PointToObjectSpace(pos); return math.abs(rel.X) <= size.X and math.abs(rel.Y) <= size.Y and math.abs(rel.Z) <= size.Z end; local function teleportToZone(zoneName) local zonesF = workspace:FindFirstChild('Zones'); if not zonesF then return nil end; local zone = zonesF:FindFirstChild(zoneName); if not zone then return nil end; local hitbox = zone:FindFirstChildWhichIsA('BasePart') or zone; local root = getRoot(); if root then root.CFrame = hitbox.CFrame; task.wait(0.3); if not isInsideZone(hitbox) then root.CFrame = hitbox.CFrame; task.wait(0.2) end end; return zone end; Value:AddToggle('AutoFarmToggle', {Title = 'Auto Farm', Default = false, Callback = function(V) getgenv().AutoFarmEnabled = V; if V then task.spawn(function() local depositPos = Vector3.new(7, 18, -480); while getgenv().AutoFarmEnabled do pcall(function() local selectedZone = getgenv().SelectedZone; local zonesToCheck = {}; if selectedZone == 'All' then local zf = workspace:FindFirstChild('Zones'); if zf then for _, z in ipairs(zf:GetChildren()) do table.insert(zonesToCheck, z.Name) end end else table.insert(zonesToCheck, selectedZone) end; for _, zoneName in ipairs(zonesToCheck) do if not getgenv().AutoFarmEnabled then break end; teleportToZone(zoneName); local spawners = workspace:FindFirstChild('ItemSpawners'); if not spawners then continue end; local zoneSpawner = spawners:FindFirstChild(zoneName); if not zoneSpawner then task.wait(0.5); teleportToZone(zoneName); continue end; local foundItem = false; for _, spawner in ipairs(zoneSpawner:GetChildren()) do if not getgenv().AutoFarmEnabled then break end; local origName = spawner:GetAttribute('OriginalName') or spawner.Name; if not isItemSelected(origName) then continue end; foundItem = true; local itemPart = nil; local prompt = nil; local rp = spawner:FindFirstChild('RootPart'); if rp then prompt = rp:FindFirstChild('ProximityPrompt'); itemPart = rp end; if not prompt then for _, desc in ipairs(spawner:GetDescendants()) do if desc:IsA('ProximityPrompt') then prompt = desc; itemPart = desc.Parent; break end end end; if not prompt or not itemPart then continue end; local root = getRoot(); if not root then break end; root.CFrame = itemPart.CFrame; task.wait(0.3); local attempts = 0; while getgenv().AutoFarmEnabled and attempts < 20 do root = getRoot(); if not root then break end; root.CFrame = itemPart.CFrame; fireproximityprompt(prompt); task.wait(0.2); local playerFolder = workspace:FindFirstChild(lp.Name); local carry = playerFolder and playerFolder:FindFirstChild('CarryVisuals'); if carry and #carry:GetChildren() > 0 then break end; attempts = attempts + 1 end; local playerFolder = workspace:FindFirstChild(lp.Name); local carry = playerFolder and playerFolder:FindFirstChild('CarryVisuals'); if carry and #carry:GetChildren() > 0 then local carryCount = #carry:GetChildren(); local maxCarry = lp:GetAttribute('MaxCarry') or 1; if carryCount >= maxCarry then root = getRoot(); if root then root.CFrame = CFrame.new(depositPos); repeat task.wait(0.2); if not getgenv().AutoFarmEnabled then break end; playerFolder = workspace:FindFirstChild(lp.Name); carry = playerFolder and playerFolder:FindFirstChild('CarryVisuals'); until not getgenv().AutoFarmEnabled or not carry or #carry:GetChildren() == 0 end end end end; if not foundItem then teleportToZone(zoneName); task.wait(1) end end end); task.wait(0.2) end end) end end})"
+                },
+                {
+                    "Type": "Section",
+                    "Title": "Collect",
+                    "Icon": ""
+                },
+                {
+                    "Type": "Logic",
+                    "id": "CoinCollectorLogic",
+                    "Script": "getgenv().AutoCollectPlot = false; local lp = game.Players.LocalPlayer; local function getRoot() return lp.Character and lp.Character:FindFirstChild('HumanoidRootPart') end; Value:AddToggle('AutoCollectPlotToggle', {Title = 'Auto Collect', Default = false, Callback = function(V) getgenv().AutoCollectPlot = V; if V then task.spawn(function() while getgenv().AutoCollectPlot do pcall(function() local plot = workspace:FindFirstChild('Plot_' .. lp.Name); if plot then for _, floor in ipairs(plot:GetChildren()) do if floor.Name:match('^Floor') then local slots = floor:FindFirstChild('Slots'); if slots then for _, slot in ipairs(slots:GetChildren()) do local spawnObj = slot:FindFirstChild('Spawn'); if spawnObj then local hasItem = false; for _, child in ipairs(spawnObj:GetChildren()) do if not child:IsA('ProximityPrompt') then hasItem = true; break end end; if hasItem then local ct = slot:FindFirstChild('CollectTouch'); if ct and ct:FindFirstChild('TouchInterest') and getRoot() then firetouchinterest(getRoot(), ct, 0); task.wait(); firetouchinterest(getRoot(), ct, 1) end end end end end end end end end); task.wait(0.5) end end) end end})"
+                }
+            ]
+        },
+        {
+            "Title": "Teleport",
+            "Icon": "I-navigation",
+            "Elements": [
+                {
+                    "Type": "Section",
+                    "Title": "Teleport Locations",
+                    "Icon": "I-map"
+                },
+                {
+                    "Type": "Logic",
+                    "id": "TeleportLogic",
+                    "Script": "local lp = game.Players.LocalPlayer; local zonesFolder = workspace:FindFirstChild('Zones'); local zoneValues = {}; if zonesFolder then for _, v in ipairs(zonesFolder:GetChildren()) do table.insert(zoneValues, v.Name) end end; getgenv().TeleportZone = ''; local function getRoot() local c = lp.Character or lp.CharacterAdded:Wait(); return c and c:FindFirstChild('HumanoidRootPart') end; local function teleportToZone(zoneName) local zonesF = workspace:FindFirstChild('Zones'); if not zonesF then return end; local zone = zonesF:FindFirstChild(zoneName); if not zone then return end; local hitbox = zone:FindFirstChildWhichIsA('BasePart') or zone; local root = getRoot(); if root then root.CFrame = hitbox.CFrame end end; Value:AddDropdown('TeleportZoneSelector', {Title = 'Select Zone', Values = zoneValues, Default = '', Multi = false, Callback = function(V) getgenv().TeleportZone = V end}); Value:AddButton({Title = 'Teleport to Selected', Callback = function() local selected = getgenv().TeleportZone; if selected and selected ~= '' then teleportToZone(selected) end end}); Value:AddButton({Title = 'Teleport to Base', Callback = function() local plot = workspace:FindFirstChild('Plot_' .. lp.Name); local root = getRoot(); if plot and root then root.CFrame = plot:GetPivot() end end})"
+                }
+            ]
+        },
+        {
+            "Title": "Shop",
+            "Icon": "I-shopping-cart",
+            "Elements": [
+                {
+                    "Type": "Section",
+                    "Title": "Auto Buy",
+                    "Icon": "I-zap"
+                },
+                {
+                    "Type": "Logic",
+                    "id": "ShopLogic",
+                    "Script": "getgenv().AutoBuySpeed = false; getgenv().AutoBuyCarry = false; getgenv().SpeedAmount = 10; Value:AddDropdown('SpeedAmountDropdown', {Title = 'Speed Amount', Values = {'1', '5', '10'}, Default = '10', Multi = false, Callback = function(V) getgenv().SpeedAmount = tonumber(V) end}); Value:AddToggle('AutoBuySpeedToggle', {Title = 'Auto Buy Speed', Default = false, Callback = function(V) getgenv().AutoBuySpeed = V; if V then task.spawn(function() while getgenv().AutoBuySpeed do pcall(function() game:GetService('ReplicatedStorage').Events.PurchaseSpeed:FireServer(getgenv().SpeedAmount) end); task.wait(.1) end end) end end}); Value:AddToggle('AutoBuyCarryToggle', {Title = 'Auto Buy Carry', Default = false, Callback = function(V) getgenv().AutoBuyCarry = V; if V then task.spawn(function() while getgenv().AutoBuyCarry do pcall(function() game:GetService('ReplicatedStorage').Events.PurchaseCarry:FireServer() end); task.wait(1) end end) end end})"
+                }
+            ]
+        }
+    ]
+}

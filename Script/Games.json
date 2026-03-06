@@ -10,6 +10,20 @@
         "id": "106685450523667",
         "name": "Glide for Brainrots",
         "path": "GlideForBrainrots.json",
+        "version": "1.0.7",
+        "status": "1"
+    },
+    "Jump for Brainrots!": {
+        "id": "139299356663913",
+        "name": "Jump for Brainrots!",
+        "path": "JumpForBrainrots.json",
+        "version": "1.0.0",
+        "status": "1"
+    },
+    "Run For Brainrots!": {
+        "id": "94702395375549",
+        "name": "Run For Brainrots!",
+        "path": "RunForBrainrots.json",
         "version": "1.0.0",
         "status": "1"
     },
