@@ -4,55 +4,79 @@
         "name": "Domino Engine",
         "path": "DominoEngine.json",
         "version": "1.0.0",
-        "status": "1"
+        "status": "1",
+        "category": "Simulator"
     },
     "Glide for Brainrots": {
         "id": "106685450523667",
         "name": "Glide for Brainrots",
         "path": "GlideForBrainrots.json",
         "version": "1.0.7",
-        "status": "1"
+        "status": "1",
+        "category": "Brainrots"
     },
     "Jump for Brainrots!": {
         "id": "139299356663913",
         "name": "Jump for Brainrots!",
         "path": "JumpForBrainrots.json",
         "version": "1.0.0",
-        "status": "1"
+        "status": "1",
+        "category": "Brainrots"
     },
     "Run For Brainrots!": {
         "id": "94702395375549",
         "name": "Run For Brainrots!",
         "path": "RunForBrainrots.json",
         "version": "1.0.0",
-        "status": "1"
+        "status": "1",
+        "category": "Brainrots"
+    },
+    "Slide For Brainrots": {
+        "id": "101676536945567",
+        "name": "Slide For Brainrots",
+        "path": "SlideForBrainrots.json",
+        "version": "1.0.0",
+        "status": "1",
+        "category": "Brainrots"
+    },
+    "Climb For Brainrots": {
+        "id": "134951244280326",
+        "name": "Climb For Brainrots",
+        "path": "ClimbForBrainrots.json",
+        "version": "1.0.0",
+        "status": "1",
+        "category": "Brainrots"
     },
     "Mine a Brainrot": {
         "id": "108873585073785",
         "name": "Mine a Brainrot",
         "path": "MineaBrainrot.json",
         "version": "1.0.5",
-        "status": "1"
+        "status": "1",
+        "category": "Brainrots"
     },
     "Dig Legends": {
         "id": "103571191458177",
         "name": "Dig Legends ⛏️🏆",
         "path": "DigLegends.json",
         "version": "1.0.3",
-        "status": "1"
+        "status": "1",
+        "category": "Simulator"
     },
     "⛏️ Break a Lucky Block!": {
         "id": "124311897657957",
         "name": "⛏️ Break a Lucky Block!",
         "path": "BreakALuckyBlock.json",
         "version": "1.0.2",
-        "status": "1"
+        "status": "1",
+        "category": "Simulator"
     },
     "Find Who Slapped": {
         "id": "72167803024670",
         "name": "Find Who Slapped",
         "path": "FindWhoSlapped.json",
         "version": "1.0.1",
-        "status": "1"
+        "status": "1",
+        "category": "More"
     }
 }

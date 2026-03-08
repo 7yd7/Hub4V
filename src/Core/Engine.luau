@@ -167,9 +167,16 @@ function Engine.LoadAndBuild(adapter)
         iconLogo = Engine.GetIcon(winData.iconLogo)
     })
 
-    for _, tabData in ipairs(data.Tabs or {}) do
+    for i, tabData in ipairs(data.Tabs or {}) do
         tabData.Icon = Engine.GetIcon(tabData.Icon)
         local Tab = Window:AddTab(tabData)
+        if i == 1 and winData.Discord then
+            for _, disc in ipairs(winData.Discord) do
+                if Tab.AddDiscord then
+                    Tab:AddDiscord(disc.Title or "Discord", { Invite = disc.Server })
+                end
+            end
+        end
         addElementsToTab(Tab, tabData.Elements, adapter, Engine)
     end
 

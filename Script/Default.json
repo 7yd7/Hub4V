@@ -7,6 +7,12 @@
             580,
             460
         ],
+        "Discord": [
+            {
+                "Server": "https://discord.com/invite/kRfzv2kV7X",
+                "Title": "Discord Server 7yd7"
+            }
+        ],
         "Acrylic": true,
         "Theme": "Darker",
         "Logo": "I-7yd7Logo",
@@ -159,7 +165,7 @@
                 },
                 {
                     "Type": "Logic",
-                    "Script": "local data = Fetch('Script/Games.json'); if data then local games = HttpService:JSONDecode(data); for _, g in pairs(games) do local st = (g.status == '1' and '🟢') or (g.status == '2' and '🟡') or '🔴'; Value:AddButton({Title = g.name .. ' | ' .. st, Description = 'Version: ' .. (g.version or '1.0.0'), Callback = function() game:GetService('TeleportService'):Teleport(tonumber(g.id)) end}) end end"
+                    "Script": "local data = Fetch('Script/Games.json'); if data then local notify = function(t, d) if getgenv().NexsNotifications then getgenv().NexsNotifications.Notify(t, d, 3) elseif Notifications then Notifications.Notify(t, d, 3) end end; getgenv().GameAction = 'Teleport'; Value:AddDropdown('GameActionDrop', {Title = 'Action Type', Values = {'Teleport', 'Copy Game ID', 'Copy Game Link', 'Copy Game Name'}, Multi = false, Default = 'Teleport', Callback = function(v) getgenv().GameAction = type(v) == 'table' and v[1] or v; notify('System', 'Game Action set to: '..tostring(getgenv().GameAction)) end}); local games = HttpService:JSONDecode(data); local cats = {}; for _, g in pairs(games) do local c = g.category or 'More'; if not cats[c] then cats[c] = {} end; table.insert(cats[c], g); end; local catNames = {}; for cName in pairs(cats) do table.insert(catNames, cName) end; table.sort(catNames, function(a, b) if a == 'More' then return false elseif b == 'More' then return true else return a < b end end); for _, cName in ipairs(catNames) do local cGames = cats[cName]; local titles = {}; local t2data = {}; for _, g in ipairs(cGames) do local st = (g.status == '1' and '🟢') or (g.status == '2' and '🟡') or '🔴'; local t = g.name..' | '..(g.version or '1.0.0')..' | '..st; table.insert(titles, t); t2data[t] = g; end; Value:AddDropdown('GamesDrop_'..cName, {Title = cName, Values = titles, Multi = false, Default = nil, Callback = function(v) if type(v) == 'table' then v = v[1] end; local gData = t2data[v]; if not gData then return end; local act = getgenv().GameAction; if act == 'Teleport' then notify('Teleport', 'Joining '..gData.name..'...'); local s, e = pcall(function() game:GetService('TeleportService'):Teleport(tonumber(gData.id)) end); if not s then notify('Teleport Error', 'Failed / Verify Teleports: '..tostring(e)) end; elseif act == 'Copy Game ID' then setclipboard(tostring(gData.id)); notify('Copied', 'ID for '..gData.name..' copied!'); elseif act == 'Copy Game Link' then setclipboard('https://www.roblox.com/games/'..tostring(gData.id)); notify('Copied', 'Link for '..gData.name..' copied!'); elseif act == 'Copy Game Name' then setclipboard(gData.name); notify('Copied', 'Name '..gData.name..' copied!'); end end}) end end"
                 }
             ]
         },

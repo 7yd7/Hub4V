@@ -88,9 +88,65 @@ function Adapter:AddTab(config)
         return Tab:AddSection(title, icon)
     end
     function Proxy:AddDropdown(id, el)
-        local d = Tab:AddDropdown(id, { Title = el.Title, Values = el.Values, Default = el.Default, Multi = el.Multi, Callback = el.Callback })
-        Adapter.Options[id] = d
-        return d
+        local initialValue = el.Default
+        local tracker
+
+        local function dropdownCallback(v)
+            if tracker then
+                tracker.Value = v
+            end
+            if el.Callback then
+                el.Callback(v)
+            end
+        end
+
+        local d = Tab:AddDropdown(id, {
+            Title = el.Title,
+            Values = el.Values,
+            Default = el.Default,
+            Multi = el.Multi,
+            Callback = dropdownCallback
+        })
+
+        tracker = {
+            Raw = d,
+            Value = initialValue,
+            SetValues = function(self, values)
+                local newValues = values or {}
+                local ok = false
+                if d and d.SetValues then
+                    ok = pcall(function() d:SetValues(newValues) end)
+                end
+                if not ok and d and d.Refresh then
+                    ok = pcall(function() d:Refresh(newValues) end)
+                end
+                if not ok and d and d.Set then
+                    pcall(function() d:Set(newValues) end)
+                end
+            end,
+            SetValue = function(self, value)
+                self.Value = value
+                local ok = false
+                if d and d.SetValue then
+                    ok = pcall(function() d:SetValue(value) end)
+                end
+                if not ok and d and d.Set then
+                    ok = pcall(function() d:Set(value) end)
+                end
+                if not ok and d and d.Select then
+                    pcall(function() d:Select(value) end)
+                end
+            end
+        }
+
+        setmetatable(tracker, {
+            __index = function(_, key)
+                return d and d[key]
+            end
+        })
+
+        Adapter.Options[id] = tracker
+        return tracker
     end
 
     self.RawTabs = self.RawTabs or {}

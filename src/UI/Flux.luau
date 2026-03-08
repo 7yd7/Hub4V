@@ -14,14 +14,32 @@ function Adapter:Track(id, element, initialValue)
         SetValue = function(self, val)
             self.Value = val
 			if type(element) == "table" then
+				local ok = false
 				if element.SetValue then
-					element:SetValue(val)
-				elseif element.Change then
-					element:Change(val)
-				elseif element.Select then
-					element:Select(val)
+					ok = pcall(function() element:SetValue(val) end)
+				end
+				if not ok and element.Change then
+					ok = pcall(function() element:Change(val) end)
+				end
+				if not ok and element.Select then
+					pcall(function() element:Select(val) end)
 				end
 			end
+        end,
+        SetValues = function(self, values)
+            if type(element) == "table" then
+                local newValues = values or {}
+                local ok = false
+                if element.SetValues then
+                    ok = pcall(function() element:SetValues(newValues) end)
+                end
+                if not ok and element.Refresh then
+                    ok = pcall(function() element:Refresh(newValues) end)
+                end
+                if not ok and element.Set then
+                    pcall(function() element:Set(newValues) end)
+                end
+            end
         end
     }
 	
