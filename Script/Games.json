@@ -55,6 +55,14 @@
         "status": "1",
         "category": "Brainrots"
     },
+    "Jump To Steal Lucky Blocks": {
+        "id": "82031770257269",
+        "name": "Jump To Steal Lucky Blocks",
+        "path": "JumpToStealLuckyBlocks.json",
+        "version": "1.0.0",
+        "status": "1",
+        "category": "Brainrots"
+    },
     "Dig Legends": {
         "id": "103571191458177",
         "name": "Dig Legends ⛏️🏆",
