@@ -63,6 +63,14 @@
         "status": "1",
         "category": "Brainrots"
     },
+    "Fly for Brainrots!": {
+        "id": "74277864669743",
+        "name": "Fly for Brainrots!",
+        "path": "FlyForBrainrots.json",
+        "version": "1.0.0",
+        "status": "1",
+        "category": "Brainrots"
+    },
     "Dig Legends": {
         "id": "103571191458177",
         "name": "Dig Legends ⛏️🏆",
