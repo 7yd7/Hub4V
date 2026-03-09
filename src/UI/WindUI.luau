@@ -3,7 +3,7 @@ local Engine = loadstring(game:HttpGet(getgenv().NEXS_BASE_URL .. "/src/Core/Eng
 local WindUI
 do
     local ok, result = pcall(function()
-        return loadstring(game:HttpGet("https://raw.githubusercontent.com/Footagesus/WindUI/main/dist/main.lua"))()
+        return loadstring(game:HttpGet("https://github.com/Footagesus/WindUI/releases/latest/download/main.lua"))()
     end)
     WindUI = ok and result or nil
 end
@@ -63,9 +63,11 @@ function Adapter:AddTab(config)
     })
 
     local activeContainer = Tab
+    local openSingleSection = (tonumber(config._SectionCount) == 1)
     if config.SectionTitle or config.SectionTitleFi then
         activeContainer = Tab:Section({
             Title = config.SectionTitle or config.SectionTitleFi,
+            Opened = openSingleSection,
         })
     end
 
@@ -84,7 +86,8 @@ function Adapter:AddTab(config)
         
         local section = Tab:Section({
             Title = title,
-            TextSize = textSize
+            TextSize = textSize,
+            Opened = openSingleSection,
         })
         activeContainer = section
         return section

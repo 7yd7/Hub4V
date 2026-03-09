@@ -63,25 +63,64 @@ function Adapter:AddTab(config)
         Description = config.Description or "",
         Icon = config.Icon 
     })
-   
-    local DefaultSection = Tab:NewSection({
-        Title = config.SectionTitle or "Main",
-        Position = config.SectionPosition or "Left",
-        Icon = Engine.GetIcon(config.SectionIcon) 
-    })
-    
-    self.Tabs[config.Title] = DefaultSection
-    
-    local Proxy = { Raw = DefaultSection, CurrentSection = DefaultSection }
-    
-    function Proxy:AddSection(args)
-        local pos = args.SectionPosition or "Left"
-        local newSec = Tab:NewSection({
+
+    local sectionIndex = 0
+
+    local function resolveSectionPosition(args)
+        if args and args.SectionPosition then
+            return args.SectionPosition
+        end
+        return (sectionIndex % 2 == 0) and "Left" or "Right"
+    end
+
+    local function createSection(args)
+        args = args or {}
+        local sec = Tab:NewSection({
             Title = args.Title,
-            Position = pos,
+            Position = resolveSectionPosition(args),
             Icon = Engine.GetIcon(args.Icon)
         })
+        sectionIndex = sectionIndex + 1
+        return sec
+    end
+
+    local Proxy = { Raw = nil, CurrentSection = nil }
+
+    local function ensureCurrentSection()
+        if Proxy.CurrentSection then
+            return Proxy.CurrentSection
+        end
+
+        local fallback = createSection({
+            Title = config.SectionTitle or "",
+            SectionPosition = config.SectionPosition or "Left",
+            Icon = config.SectionIcon or ""
+        })
+        Proxy.CurrentSection = fallback
+        Proxy.Raw = fallback
+        Adapter.Tabs[config.Title] = fallback
+        return fallback
+    end
+
+    if config.SectionTitle or config.SectionIcon then
+        local initial = createSection({
+            Title = config.SectionTitle or "",
+            SectionPosition = config.SectionPosition or "Left",
+            Icon = config.SectionIcon
+        })
+        Proxy.CurrentSection = initial
+        Proxy.Raw = initial
+        Adapter.Tabs[config.Title] = initial
+    end
+    
+    function Proxy:AddSection(args)
+        args = args or {}
+        local newSec = createSection(args)
         Proxy.CurrentSection = newSec
+        if not Proxy.Raw then
+            Proxy.Raw = newSec
+            Adapter.Tabs[config.Title] = newSec
+        end
         return newSec
     end
 
@@ -115,7 +154,7 @@ function Adapter:AddTab(config)
         end
         
         for i, segmentText in ipairs(initialLines) do
-            local segObj = Proxy.CurrentSection:NewTitle(segmentText)
+            local segObj = ensureCurrentSection():NewTitle(segmentText)
             table.insert(segments, segObj)
         end
         
@@ -129,12 +168,16 @@ function Adapter:AddTab(config)
                 else
                     table.insert(newLines, line)
                 end
-            end
-            
-            for i, segObj in ipairs(segments) do
-                if newLines[i] then
-                    segObj.Set(newLines[i])
-                    segObj.Visible(true)
+	            end
+	            
+	            for i = #segments + 1, #newLines do
+	                table.insert(segments, ensureCurrentSection():NewTitle(newLines[i]))
+	            end
+
+	            for i, segObj in ipairs(segments) do
+	                if newLines[i] then
+	                    segObj.Set(newLines[i])
+	                    segObj.Visible(true)
                 else
                     segObj.Visible(false)
                 end
@@ -166,7 +209,7 @@ function Adapter:AddTab(config)
     end
     
     function Proxy:AddButton(args) 
-        local el = Proxy.CurrentSection:NewButton({
+        local el = ensureCurrentSection():NewButton({
             Title = args.Title or args.Name,
             Callback = args.Callback
         })
@@ -180,7 +223,7 @@ function Adapter:AddTab(config)
             if tracker then tracker.Value = newVal end
             if args.Callback then args.Callback(newVal) end
         end
-        local el = Proxy.CurrentSection:NewToggle({
+        local el = ensureCurrentSection():NewToggle({
             Title = args.Title,
             Default = val,
             Callback = callback
@@ -196,7 +239,7 @@ function Adapter:AddTab(config)
             if tracker then tracker.Value = newVal end
             if args.Callback then args.Callback(newVal) end
         end
-        local el = Proxy.CurrentSection:NewSlider({
+        local el = ensureCurrentSection():NewSlider({
             Title = args.Title,
             Min = args.Min or 0,
             Max = args.Max or 100,
@@ -218,7 +261,7 @@ function Adapter:AddTab(config)
             if tracker then tracker.Value = text end
             if args.Callback then args.Callback(text) end
         end
-        local el = Proxy.CurrentSection:NewTextbox({
+        local el = ensureCurrentSection():NewTextbox({
             Title = args.Title,
             Default = val,
             Callback = callback
@@ -234,7 +277,7 @@ function Adapter:AddTab(config)
             if tracker then tracker.Value = newVal end
             if args.Callback then args.Callback(newVal) end
         end
-        local el = Proxy.CurrentSection:NewDropdown({
+        local el = ensureCurrentSection():NewDropdown({
             Title = args.Title,
             Data = args.Values or {},
             Default = val,

@@ -2115,7 +2115,7 @@ function Library.new(config)
 				};
 			end;
 
-			function SectionTable:NewDropdown(drop)
+				function SectionTable:NewDropdown(drop)
 				drop = Config(drop,{
 					Title = "Dropdown",
 					Data = {'One','Two','Three','Four'},
@@ -2248,11 +2248,38 @@ function Library.new(config)
 				Button.TextSize = 14.000
 				Button.TextTransparency = 1.000
 
-				local Updater = function(value)
-					drop.Default = value;
-					ValueText.Text = tostring(value);
-					drop.Callback(value);
-				end;
+					local function setSelectedValue(value, triggerCallback)
+						drop.Default = value;
+						ValueText.Text = tostring(value or "NONE");
+						if triggerCallback ~= false then
+							drop.Callback(value);
+						end
+					end
+
+					local function setDataList(list)
+						if type(list) ~= "table" then
+							list = {}
+						end
+						drop.Data = list
+
+						local hasCurrent = false
+						for _, v in ipairs(drop.Data) do
+							if v == drop.Default then
+								hasCurrent = true
+								break
+							end
+						end
+
+						if not hasCurrent then
+							setSelectedValue(drop.Data[1] or "NONE", false)
+						else
+							ValueText.Text = tostring(drop.Default or "NONE")
+						end
+					end
+
+					local Updater = function(value)
+						setSelectedValue(value, true)
+					end;
 
 				Button.MouseButton1Click:Connect(function()
 					WindowTable.Dropdown:Setup(MFrame)
@@ -2260,31 +2287,36 @@ function Library.new(config)
 					WindowTable.Dropdown:Open(drop.Data,drop.Default,Updater)
 				end)
 
-				return {
-					Visible = function(newindx)
-						FunctionDropdown.Visible = newindx
-					end,
-					Value = function(value)
-						ValueText.Text = tostring(value);
-						drop.Callback(value);
-					end,
-					Open = function(value)
-						WindowTable.Dropdown:Setup(MFrame)
+					return {
+						Visible = function(newindx)
+							FunctionDropdown.Visible = newindx
+						end,
+						Value = function(value)
+							setSelectedValue(value, true)
+						end,
+						Open = function(value)
+							WindowTable.Dropdown:Setup(MFrame)
 
-						WindowTable.Dropdown:Open(drop.Data,drop.Default,Updater)
-					end,
+							WindowTable.Dropdown:Open(drop.Data,drop.Default,Updater)
+						end,
 
-					Close = function(value)
-						WindowTable.Dropdown:Close();
-					end,
-					Clear = function()
-						drop.Data = {}
-					end,
-					Set = function(table)
-						drop.Data = table
-					end
-				};
-			end;
+						Close = function(value)
+							WindowTable.Dropdown:Close();
+						end,
+						Clear = function()
+							setDataList({})
+						end,
+						Set = function(value)
+							setSelectedValue(value, true)
+						end,
+						SetValues = function(list)
+							setDataList(list)
+						end,
+						Refresh = function(list)
+							setDataList(list)
+						end
+					};
+				end;
 
 			function SectionTable:NewTextbox(conf)
 				conf = Config(conf,{
@@ -2429,10 +2461,24 @@ function Library.new(config)
 				Button.TextTransparency = 1.000
 
 
-				TextBox.FocusLost:Connect(function(press)
-					conf.Callback(TextBox.Text);
-				end)
-			end;
+					TextBox.FocusLost:Connect(function(press)
+						conf.Callback(TextBox.Text);
+					end)
+
+					return {
+						Visible = function(newindx)
+							FunctionTextbox.Visible = newindx
+						end,
+						Value = function(newText)
+							TextBox.Text = tostring(newText or "")
+							conf.Callback(TextBox.Text)
+						end,
+						Set = function(newText)
+							TextBox.Text = tostring(newText or "")
+							conf.Callback(TextBox.Text)
+						end,
+					}
+				end;
 
 			return SectionTable;
 		end;

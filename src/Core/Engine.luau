@@ -83,6 +83,16 @@ local function addElementsToTab(tabObj, elementsArray, adapter, EngineRef)
     end
 end
 
+local function countSectionsInElements(elementsArray)
+    local total = 0
+    if not elementsArray then return total end
+    for _, el in ipairs(elementsArray) do
+        if el.SectionTitle then total = total + 1 end
+        if el.Type == "Section" then total = total + 1 end
+    end
+    return total
+end
+
 local function collectIcons(tabs, set)
     if not tabs then return end
     for _, t in ipairs(tabs) do
@@ -169,6 +179,7 @@ function Engine.LoadAndBuild(adapter)
 
     for i, tabData in ipairs(data.Tabs or {}) do
         tabData.Icon = Engine.GetIcon(tabData.Icon)
+        tabData._SectionCount = countSectionsInElements(tabData.Elements) + ((tabData.SectionTitle or tabData.SectionTitleFi) and 1 or 0)
         local Tab = Window:AddTab(tabData)
         if i == 1 and winData.Discord then
             for _, disc in ipairs(winData.Discord) do
@@ -181,16 +192,22 @@ function Engine.LoadAndBuild(adapter)
     end
 
     if currentGameData and currentGameData.Tabs then
-        local Dashboard = Window:AddTab({ Title = currentGameName, Icon = Engine.GetIcon("I-game") })
+        local dashboardSectionCount = 0
         for _, category in ipairs(currentGameData.Tabs) do
-            if category.Title then
-                Dashboard:AddParagraph({ Title = "— " .. category.Title .. " —", Content = "" })
-            end
+            dashboardSectionCount = dashboardSectionCount + countSectionsInElements(category.Elements)
+        end
+        local Dashboard = Window:AddTab({
+            Title = currentGameName,
+            Icon = Engine.GetIcon("I-game"),
+            _SectionCount = dashboardSectionCount
+        })
+        for _, category in ipairs(currentGameData.Tabs) do
             addElementsToTab(Dashboard, category.Elements, adapter, Engine)
 
             local DedicatedTab = Window:AddTab({
                 Title = category.Title or "Category",
-                Icon = Engine.GetIcon(category.Icon)
+                Icon = Engine.GetIcon(category.Icon),
+                _SectionCount = countSectionsInElements(category.Elements)
             })
             addElementsToTab(DedicatedTab, category.Elements, adapter, Engine)
         end
