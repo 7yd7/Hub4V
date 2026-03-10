@@ -71,6 +71,14 @@
         "status": "1",
         "category": "Brainrots"
     },
+    "Escape Obbies For Brainrots!": {
+        "id": "125055254587561",
+        "name": "Escape Obbies For Brainrots!",
+        "path": "EscapeObbiesForBrainrots.json",
+        "version": "1.0.0",
+        "status": "1",
+        "category": "Brainrots"
+    },
     "Dig Legends": {
         "id": "103571191458177",
         "name": "Dig Legends ⛏️🏆",
