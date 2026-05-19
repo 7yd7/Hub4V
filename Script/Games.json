@@ -95,6 +95,14 @@
         "status": "1",
         "category": "Simulator"
     },
+    "Survive Zombie Arena": {
+        "id": "98927955463992",
+        "name": "Survive Zombie Arena",
+        "path": "SurviveZombieArena.json",
+        "version": "1.0.0",
+        "status": "1",
+        "category": "More"
+    },
     "Find Who Slapped": {
         "id": "72167803024670",
         "name": "Find Who Slapped",
