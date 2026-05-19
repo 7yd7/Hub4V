@@ -2,20 +2,22 @@ export default {
   async fetch(request, env, context) {
     const url = new URL(request.url);
 
-    // Forward all static assets (CSS, JS, Images, etc.) directly to the static assets provider
+    const NGINX_SERVER = "http://2.56.246.128:30587";
+
     if (url.pathname !== "/" && url.pathname !== "") {
-      return env.ASSETS.fetch(request);
+      return fetch(`${NGINX_SERVER}${url.pathname}${url.search}`, {
+        headers: request.headers
+      });
     }
 
     const accept = request.headers.get("Accept") || request.headers.get("accept") || "";
 
-    // Exact Novoline-style check:
-    // If it's a browser requesting HTML (and not explicitly asking for the script via ?s or ?raw)
     if (accept.includes("text/html") && !url.searchParams.has("s") && !url.searchParams.has("raw")) {
-      return env.ASSETS.fetch(request);
+      return fetch(`${NGINX_SERVER}/`, {
+        headers: request.headers
+      });
     }
 
-    // Roblox executor (game:HttpGet), curl, or explicitly requested raw Lua script
     const rawUrl = "https://raw.githubusercontent.com/7yd7/Hub4V/Menu/client.luau";
     try {
       const res = await fetch(rawUrl, { cf: { cacheTtl: 60, cacheEverything: true } });
