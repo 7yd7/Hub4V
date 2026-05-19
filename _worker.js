@@ -2,7 +2,12 @@ export default {
   async fetch(request, env, context) {
     const url = new URL(request.url);
 
-    const NGINX_SERVER = "http://2.56.246.128:30587";
+    // Get the backend Nginx server URL strictly from Cloudflare Environment Variables (completely hidden from GitHub)
+    const NGINX_SERVER = env.NGINX_SERVER;
+
+    if (!NGINX_SERVER) {
+      return new Response("Configuration Error: NGINX_SERVER environment variable is missing.", { status: 500 });
+    }
 
     if (url.pathname !== "/" && url.pathname !== "") {
       return fetch(`${NGINX_SERVER}${url.pathname}${url.search}`, {
