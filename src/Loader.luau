@@ -13,6 +13,11 @@ local function resolveAsset(serverPath)
     local localPath = "7yd7Hub/Assets/" .. serverPath
     local fullUrl = baseUrl .. "/Assets/" .. serverPath
 
+    if isfile and isfile(localPath) and typeof(getcustomasset) == "function" then
+        local s, asset = pcall(function() return getcustomasset(localPath) end)
+        if s and asset then return asset end
+    end
+
     pcall(function()
         if makefolder then
             local parts = localFolder:split("/")
@@ -30,7 +35,6 @@ local function resolveAsset(serverPath)
         if typeof(getcustomasset) == "function" then
             local s, asset = pcall(function() return getcustomasset(localPath) end)
             if s and asset then
-                task.delay(10, function() pcall(function() if delfile then delfile(localPath) end end) end)
                 return asset
             end
         end
@@ -143,6 +147,7 @@ function Loader.Create(config)
         Card.BorderSizePixel = 0
         Card.ClipsDescendants = true
         Card.AutoButtonColor = false
+        Card.Image = "rbxassetid://96248696249042"
 
         task.spawn(function()
             local asset = resolveAsset("UI/" .. data.Name .. ".png")

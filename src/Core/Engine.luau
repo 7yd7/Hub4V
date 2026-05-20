@@ -4,6 +4,19 @@ local Engine = {}
 Engine.ProjectFolder = "7yd7Hub"
 Engine.AssetFolder = Engine.ProjectFolder .. "/Assets/icon"
 
+local iconCache = {}
+local foldersCreated = false
+
+local function ensureFolders()
+    if foldersCreated then return end
+    foldersCreated = true
+    pcall(function()
+        if not isfolder("7yd7Hub") then makefolder("7yd7Hub") end
+        if not isfolder("7yd7Hub/Assets") then makefolder("7yd7Hub/Assets") end
+        if not isfolder("7yd7Hub/Assets/icon") then makefolder("7yd7Hub/Assets/icon") end
+    end)
+end
+
 function Engine.GetBaseUrl()
     local url = getgenv().NEXS_BASE_URL or ""
     if url:sub(-1) == "/" then url = url:sub(1, -2) end
@@ -20,19 +33,19 @@ function Engine.GetIcon(name)
     if not name or name == "" then return nil end
     local lowerName = string.lower(tostring(name))
     if lowerName:sub(1, 2) == "i-" then
-        local rawName = lowerName:sub(3)
-        local fileName = "i-" .. rawName .. ".png"
-        local localPath = Engine.AssetFolder .. "/" .. fileName
+        if iconCache[name] then
+            return iconCache[name]
+        end
         
-        pcall(function()
-            if not isfolder("7yd7Hub") then makefolder("7yd7Hub") end
-            if not isfolder("7yd7Hub/Assets") then makefolder("7yd7Hub/Assets") end
-            if not isfolder("7yd7Hub/Assets/icon") then makefolder("7yd7Hub/Assets/icon") end
-        end)
+        local fileName = tostring(name) .. ".png"
+        local localPath = Engine.AssetFolder .. "/" .. fileName
 
         if isfile(localPath) then
             local s, asset = pcall(function() return getcustomasset(localPath) end)
-            if s and asset then return asset end
+            if s and asset then
+                iconCache[name] = asset
+                return asset
+            end
         end
 
         local baseUrl = Engine.GetBaseUrl()
@@ -41,10 +54,14 @@ function Engine.GetIcon(name)
 
         local success, content = pcall(function() return game:HttpGet(fullUrl) end)
         if success and content and content:sub(1, 1) ~= "<" and content ~= "" then
+            ensureFolders()
             pcall(function() writefile(localPath, content) end)
             if typeof(getcustomasset) == "function" then
                 local s, asset = pcall(function() return getcustomasset(localPath) end)
-                return s and asset or nil
+                if s and asset then
+                    iconCache[name] = asset
+                    return asset
+                end
             end
         end
         return nil
@@ -107,7 +124,20 @@ local function collectIcons(tabs, set)
 end
 
 function Engine.LoadAndBuild(adapter)
-    local rawData = Engine.Fetch("Script/Default.json")
+    local rawData, gamesDataRaw
+    local fetchThreads = 2
+    task.spawn(function()
+        rawData = Engine.Fetch("Script/Default.json")
+        fetchThreads = fetchThreads - 1
+    end)
+    task.spawn(function()
+        gamesDataRaw = Engine.Fetch("Script/Games.json")
+        fetchThreads = fetchThreads - 1
+    end)
+
+    local waitStart = tick()
+    repeat task.wait() until fetchThreads == 0 or (tick() - waitStart) > 5
+
     if not rawData then warn("[7yd7 Engine] Failed to load Default JSON") return end
 
     local decodeSuccess, data = pcall(function() return HttpService:JSONDecode(rawData) end)
@@ -116,7 +146,6 @@ function Engine.LoadAndBuild(adapter)
     local currentGameData = nil
     local currentGameName = nil
 
-    local gamesDataRaw = Engine.Fetch("Script/Games.json")
     if gamesDataRaw then
         local sDec, games = pcall(function() return HttpService:JSONDecode(gamesDataRaw) end)
         if sDec then
@@ -157,7 +186,7 @@ function Engine.LoadAndBuild(adapter)
 
     if threads > 0 then
         local start = tick()
-        repeat task.wait() until threads == 0 or (tick() - start) > 10
+        repeat task.wait() until threads == 0 or (tick() - start) > 4
     end
 
     local winData = data.Window or {}
