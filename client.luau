@@ -26,7 +26,7 @@ local uiOptions = {
     { Name = "Fluent", Path = "src/UI/Fluent.luau", Recommended = true },
     { Name = "Rayfield", Path = "src/UI/Rayfield.luau" },
     { Name = "WindUI", Path = "src/UI/WindUI.luau", Recommended = true  },
-    { Name = "Maclib", Path = "src/UI/Maclib.luau", Recommended = true },
+    { Name = "Maclib", Path = "src/UI/Maclib.luau"},
     --  { Name = "Dummy", Path = "src/UI/Dummy.luau" },
     { Name = "Flux", Path = "src/UI/Flux.luau" },
     { Name = "NOTHING", Path = "src/UI/NOTHING.luau"}
