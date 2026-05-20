@@ -28,7 +28,7 @@ local uiOptions = {
     { Name = "WindUI", Path = "src/UI/WindUI.luau", Recommended = true  },
     { Name = "Maclib", Path = "src/UI/Maclib.luau"},
     { Name = "Obsidian", Path = "src/UI/Obsidian.luau", Recommended = true },
-    --  { Name = "Dummy", Path = "src/UI/Dummy.luau" },
+    -- It doesn't work anymore 😭 { Name = "Dummy", Path = "src/UI/Dummy.luau" },
     { Name = "Flux", Path = "src/UI/Flux.luau" },
     { Name = "NOTHING", Path = "src/UI/NOTHING.luau"}
 }
