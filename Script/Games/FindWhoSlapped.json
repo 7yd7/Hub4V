@@ -4,16 +4,28 @@
             "Title": "Auto Matic",
             "Elements": [
                 {
+                    "Type": "Section",
+                    "Title": "Hit"
+                },
+                {
                     "Type": "Logic",
                     "Script": "Value:AddButton({Title = 'Hit Perfect', Callback = function() local events = game:GetService('ReplicatedStorage'):FindFirstChild('Events'); local hitEvent = events and events:FindFirstChild('Hit'); if hitEvent then hitEvent:FireServer(math.huge) end end})"
                 },
-                {
+               {
                     "Type": "Logic",
                     "Script": "Value:AddToggle('AutoSlap', {Title = 'Auto Hit Perfect', Default = false, Callback = function(V) getgenv().AutoSlap = V; if V then task.spawn(function() local lp = game:GetService('Players').LocalPlayer; local events = game:GetService('ReplicatedStorage'):FindFirstChild('Events'); local hitEvent = events and events:FindFirstChild('Hit'); local lastHitState = false; local hitFired = false; while getgenv().AutoSlap do local hitVisible = false; pcall(function() if lp.PlayerGui.Frames.InGame.Hit.Visible then hitVisible = true end end); if hitVisible then if not lastHitState then hitFired = false end; if not hitFired and lp:GetAttribute('InArena') == true and lp:GetAttribute('InGame') == true then if hitEvent then hitEvent:FireServer(math.huge); hitFired = true end end else hitFired = false end; lastHitState = hitVisible; task.wait() end end) end end})"
                 },
                 {
+                    "Type": "Section",
+                    "Title": "Dodge"
+                },
+                {
                     "Type": "Logic",
                     "Script": "Value:AddToggle('AutoDodge', {Title = 'Auto Dodge', Default = false, Callback = function(V) getgenv().AutoDodge = V; if V then task.spawn(function() local lp = game:GetService('Players').LocalPlayer; while getgenv().AutoDodge do pcall(function() local dodge = lp.PlayerGui.Frames.InGame.Dodge; if dodge.Visible then firesignal(dodge.MouseButton1Up) end end); task.wait() end end) end end})"
+                },
+                {
+                    "Type": "Section",
+                    "Title": "Choose Slapper"
                 },
                 {
                     "Type": "Logic",
