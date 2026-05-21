@@ -5,8 +5,7 @@
                      "Elements":  [
                                       {
                                           "Type":  "Section",
-                                          "Title":  "Items Control",
-                                          "Icon":  "I-boxes"
+                                          "Title":  "Items Control"
                                       },
                                       {
                                           "Type":  "Logic",
