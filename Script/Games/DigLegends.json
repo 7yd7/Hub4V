@@ -4,6 +4,10 @@
             "Title": "Auto Farm",
             "Elements": [
                 {
+                    "Type": "Section",
+                    "Title":  "Breaking Blocks"
+                },
+                {
                     "Type": "Slider",
                     "Id": "HitMultiplier",
                     "Title": "Hit Multiplier",
@@ -33,6 +37,10 @@
                     "Script": "getgenv().AutoFarm = Value; if not Value then return end; local Index = game:GetService('ReplicatedStorage').Packages._Index; local Knit; for _,v in pairs(Index:GetChildren()) do if v.Name:find('sleitnick_knit') then Knit = v; break end end; local Remote = Knit.knit.Services.FightService.RE.HitBlock; local function isReady() local gui = game.Players.LocalPlayer:FindFirstChild('PlayerGui'); local h = gui and gui:FindFirstChild('HomeGui'); local b = h and h:FindFirstChild('BottomFrame'); local btn = b and b:FindFirstChild('GiveUpButton'); return btn and btn.Visible end; local function getHealth(b) local gui = b:FindFirstChild('BlockHealthGui', true); local label = gui and gui:FindFirstChild('HealthNumLabel', true); if label then local text = label.Text:split('/')[1]; if not text then return 1 end; local n, s = text:match('([%d%.]+)(%a?)'); n = tonumber(n) or 0; local mult = (s == 'K' and 1e3) or (s == 'M' and 1e6) or (s == 'B' and 1e9) or (s == 'T' and 1e12) or 1; return n * mult end return 1 end; local function getNearestArea() local nearest, minDist = nil, math.huge; local hrp = game.Players.LocalPlayer.Character and game.Players.LocalPlayer.Character:FindFirstChild('HumanoidRootPart'); if not hrp then return nil end; local areas = workspace:FindFirstChild('Areas'); if not areas then return nil end; for _, v in pairs(areas:GetChildren()) do if v:FindFirstChild('Blocks') then local ref = v:FindFirstChildWhichIsA('BasePart', true); if ref then local d = (hrp.Position - ref.Position).Magnitude; if d < minDist then minDist = d; nearest = v end end end end; return nearest end; task.spawn(function() while getgenv().AutoFarm do if isReady() then local area = getNearestArea(); if area then local strength = game.Players.LocalPlayer:GetAttribute('Strength') or 1; local multiplier = getgenv().HitMultiplier or 1; local targetCount = getgenv().TargetCount or 50; local blocks = {}; for _, b in pairs(area.Blocks:GetChildren()) do if b:IsA('Model') then table.insert(blocks, b) end end; table.sort(blocks, function(a, b) local n1 = tonumber(a.Name:match('%d+$')) or 0; local n2 = tonumber(b.Name:match('%d+$')) or 0; return n1 < n2 end); local count = math.min(targetCount, #blocks); for i = 1, count do if not getgenv().AutoFarm or not isReady() then break end; local block = blocks[i]; local hp = getHealth(block); if hp > 0 then local hitsNeeded = math.ceil(hp / strength); local hitsToDo = math.min(hitsNeeded, multiplier); for _ = 1, hitsToDo do Remote:FireServer(block.Name, strength) end end end end end task.wait(0.1) end end)"
                 },
                 {
+                    "Type": "Section",
+                    "Title":  "More"
+                },
+                {
                     "Type": "Toggle",
                     "Id": "AutoTrain",
                     "Title": "Auto Train Anvils",
@@ -41,23 +49,27 @@
                 },
                 {
                     "Type": "Toggle",
-                    "Id": "AutoWins",
-                    "Title": "Auto Wins",
-                    "Default": false,
-                    "Script": "getgenv().AutoWins = Value; if not Value then return end; local Index = game:GetService('ReplicatedStorage').Packages._Index; local Knit; for _,v in pairs(Index:GetChildren()) do if v.Name:find('sleitnick_knit') then Knit = v; break end end; local Remote = Knit.knit.Services.FightService.RE.GetTrophyEvent; task.spawn(function() while getgenv().AutoWins do Remote:FireServer() task.wait(0.1) end end)"
-                },
-                {
-                    "Type": "Toggle",
                     "Id": "AutoGetReward",
                     "Title": "Auto Get Reward",
                     "Default": false,
                     "Script": "getgenv().AutoGetReward = Value; if not Value then return end; local Index = game:GetService('ReplicatedStorage').Packages._Index; local Knit; for _,v in pairs(Index:GetChildren()) do if v.Name:find('sleitnick_knit') then Knit = v; break end end; local ResetRemote = Knit.knit.Services.OnlineRewardService.RE.ResetOnlineRewards; local ClaimRemote = Knit.knit.Services.OnlineRewardService.RE.ClaimOnlineReward; task.spawn(function() while getgenv().AutoGetReward do ResetRemote:FireServer(); for i=1,12 do if not getgenv().AutoGetReward then break end; ClaimRemote:FireServer(i) end task.wait(0.3) end end)"
+                },
+                {
+                    "Type": "Toggle",
+                    "Id": "AutoRebirth",
+                    "Title": "Auto Rebirth",
+                    "Default": false,
+                    "Script": "getgenv().AutoRebirth = Value; if not Value then return end; local Index = game:GetService('ReplicatedStorage').Packages._Index; local Knit; for _,v in pairs(Index:GetChildren()) do if v.Name:find('sleitnick_knit') then Knit = v; break end end; local Remote = Knit.knit.Services.RebirthService.RF.Rebirth; task.spawn(function() while getgenv().AutoRebirth do pcall(function() Remote:InvokeServer() end); task.wait(1) end end)"
                 }
             ]
         },
         {
             "Title": "Buy",
             "Elements": [
+                {
+                    "Type": "Section",
+                    "Title":  "Buy Pickaxes & Cloth"
+                },
                 {
                     "Type": "Toggle",
                     "Id": "AutoBuyPickaxes",
@@ -73,11 +85,8 @@
                     "Script": "getgenv().AutoBuyCloth = Value; if not Value then return end; local Index = game:GetService('ReplicatedStorage').Packages._Index; local Knit; for _,v in pairs(Index:GetChildren()) do if v.Name:find('sleitnick_knit') then Knit = v; break end end; local BuyRemote = Knit.knit.Services.ClothService.RE.BuyClothEvent; local EquipRemote = Knit.knit.Services.ClothService.RE.EquipClothEvent; local function parseVal(text) local n, s = text:match('([%d%.]+)(%a*)'); n = tonumber(n) or 0; s = s:lower(); local mult = 1; if s == 'k' then mult = 1e3 elseif s == 'm' then mult = 1e6 elseif s == 'b' then mult = 1e9 elseif s == 't' then mult = 1e12 elseif s == 'qa' then mult = 1e15 elseif s == 'qi' then mult = 1e18 elseif s == 'sx' then mult = 1e21 elseif s == 'sp' then mult = 1e24 elseif s == 'oc' then mult = 1e27 elseif s == 'no' then mult = 1e30 elseif s == 'dc' then mult = 1e33 end; return n * mult end; task.spawn(function() while getgenv().AutoBuyCloth do local diamondLabel = game.Players.LocalPlayer.PlayerGui:FindFirstChild('HomeGui', true) and game.Players.LocalPlayer.PlayerGui.HomeGui.RightFrame.CurrencyFrame.DiamondFrame.AmountLabel; local diamonds = diamondLabel and parseVal(diamondLabel.Text) or 0; local gui = game.Players.LocalPlayer.PlayerGui:FindFirstChild('ClothGui'); local container = gui and gui.Frame:FindFirstChild('ContainerFrame'); if container then local lc = {}; for _, p in pairs(container:GetChildren()) do if p.Name:match('Cloth_%d+') then table.insert(lc, p) end end; table.sort(lc, function(a, b) return (tonumber(a.Name:match('%d+')) or 0) < (tonumber(b.Name:match('%d+')) or 0) end); for _, cloth in ipairs(lc) do if not getgenv().AutoBuyCloth then break end; local btn = cloth:FindFirstChild('Button'); local cover = btn and btn:FindFirstChild('LockCover'); local lbl = btn and btn:FindFirstChild('UnlockCountLabel'); if lbl and cover and cover.Visible then if lbl.TextColor3 == Color3.fromRGB(255, 64, 255) then local price = parseVal(lbl.Text); if diamonds >= price then BuyRemote:FireServer(cloth.Name); EquipRemote:FireServer(cloth.Name); task.wait(0.5) end end end end end task.wait(1) end end)"
                 },
                 {
-                    "Type": "Toggle",
-                    "Id": "AutoRebirth",
-                    "Title": "Auto Rebirth",
-                    "Default": false,
-                    "Script": "getgenv().AutoRebirth = Value; if not Value then return end; local Index = game:GetService('ReplicatedStorage').Packages._Index; local Knit; for _,v in pairs(Index:GetChildren()) do if v.Name:find('sleitnick_knit') then Knit = v; break end end; local Remote = Knit.knit.Services.RebirthService.RF.Rebirth; task.spawn(function() while getgenv().AutoRebirth do pcall(function() Remote:InvokeServer() end); task.wait(1) end end)"
+                    "Type": "Section",
+                    "Title":  "Eggs"
                 },
                 {
                     "Type": "Logic",
@@ -88,6 +97,10 @@
         {
             "Title": "Get",
             "Elements": [
+                {
+                    "Type": "Section",
+                    "Title":  "Diamond"
+                },
                 {
                     "Type": "Input",
                     "Id": "DiamondAmount",
