@@ -1443,7 +1443,6 @@
                     const loadTarget = async (index) => {
                         const target = targets[index] || targets[0];
                         if (!target) return;
-                        mPlayBtn.href = `https://www.roblox.com/games/${target.id || getPrimaryId(game.id)}`;
                         mLoader.style.display = 'block';
                         mLoader.textContent = 'Fetching features...';
                         mContent.style.display = 'none';
