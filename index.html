@@ -1,6 +1,7 @@
 ﻿<!DOCTYPE html>
 <html lang="en" data-theme="dark">
 <head>
+    
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta property="og:image" content="https://github.com/7yd7/Hub4V/blob/Menu/Assets/icon/I-7yd7Logo.png?raw=true" />
@@ -1081,6 +1082,31 @@
             font-size: 14px;
         }
 
+        .subplace-row {
+            display: none;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 16px;
+        }
+
+        .subplace-row label {
+            font-size: 12px;
+            color: var(--text-secondary);
+            font-weight: 600;
+        }
+
+        .subplace-select {
+            flex: 1;
+            background: var(--bg-field);
+            border: 1px solid var(--bg-field-border);
+            border-radius: 10px;
+            color: var(--text-primary);
+            font-family: var(--font);
+            font-size: 13px;
+            padding: 8px 10px;
+            outline: none;
+        }
+
         @keyframes featureIn {
             from {
                 opacity: 0;
@@ -1190,6 +1216,10 @@
                 <div class="modal-body">
                     <div class="modal-badge" id="mBadge">
                         <span class="status-dot active" id="mBadgeDot"></span> <span id="mBadgeText">LIVE/UPDATED</span>
+                    </div>
+                    <div class="subplace-row" id="mSubplaceRow">
+                        <label for="mSubplaceSelect">Mode</label>
+                        <select id="mSubplaceSelect" class="subplace-select"></select>
                     </div>
                     <div id="mLoader" class="modal-loader">Fetching features...</div>
                     <div id="mContent" style="display: none;">
@@ -1316,8 +1346,41 @@
             const mContent = document.getElementById('mContent');
             const mTabs = document.getElementById('mTabs');
             const mFeaturesGrid = document.getElementById('mFeaturesGrid');
+            const mSubplaceRow = document.getElementById('mSubplaceRow');
+            const mSubplaceSelect = document.getElementById('mSubplaceSelect');
 
             let currentParsedTabs = [];
+
+            function getPrimaryId(val) {
+                if (Array.isArray(val)) return val[0] || '';
+                return val || '';
+            }
+
+            function getGameTargets(game) {
+                const targets = [];
+                const subplaces = game.subplaces || {};
+                const subEntries = Object.entries(subplaces);
+
+                if (subEntries.length > 0) {
+                    subEntries.forEach(([key, sub]) => {
+                        targets.push({
+                            key,
+                            label: sub?.name || key,
+                            id: getPrimaryId(sub?.id),
+                            path: sub?.path || ''
+                        });
+                    });
+                    return targets;
+                }
+
+                targets.push({
+                    key: 'main',
+                    label: game.name || 'Main',
+                    id: getPrimaryId(game.id),
+                    path: game.path || ''
+                });
+                return targets;
+            }
 
             function closeGameModal() {
                 modal.classList.remove('active');
@@ -1328,11 +1391,25 @@
             mCloseBtn.addEventListener('click', closeGameModal);
             modal.addEventListener('click', (e) => { if (e.target === modal) closeGameModal(); });
 
+            async function loadModalFeaturesByPath(scriptPath) {
+                const url = `https://raw.githubusercontent.com/7yd7/Hub4V/refs/heads/Menu/Script/Games/${encodeURIComponent(scriptPath)}?t=${Date.now()}`;
+                const res = await fetch(url);
+                if (!res.ok) throw new Error(`Failed to fetch game script: ${res.status}`);
+                const data = await res.json();
+                currentParsedTabs = parseGameFeatures(data);
+
+                if (currentParsedTabs.length > 0) {
+                    renderModalTabs(currentParsedTabs);
+                } else {
+                    mLoader.textContent = "No features found.";
+                }
+            }
+
             async function openGameModal(game) {
                 modal.classList.add('active');
                 document.body.classList.add('features-open');
                 mTitle.textContent = game.name;
-                mPlayBtn.href = `https://www.roblox.com/games/${game.id}`;
+                mPlayBtn.href = `https://www.roblox.com/games/${getPrimaryId(game.id)}`;
 
                 mBadge.style.borderColor = game.status === '1' ? 'rgba(52,211,153,0.2)' : (game.status === '2' ? 'rgba(251,191,36,0.2)' : 'rgba(248,113,113,0.2)');
                 mBadge.style.background = game.status === '1' ? 'rgba(52,211,153,0.05)' : (game.status === '2' ? 'rgba(251,191,36,0.05)' : 'rgba(248,113,113,0.05)');
@@ -1344,25 +1421,48 @@
                 mContent.style.display = 'none';
                 mTabs.innerHTML = '';
                 mFeaturesGrid.innerHTML = '';
+                mSubplaceSelect.innerHTML = '';
+                mSubplaceRow.style.display = 'none';
 
                 try {
-                    const scriptPath = game.path || `${String(game.name || '').replace(/[^a-zA-Z0-9]/g, '')}.json`;
-                    const url = `https://raw.githubusercontent.com/7yd7/Hub4V/refs/heads/Menu/Script/Games/${encodeURIComponent(scriptPath)}?t=${Date.now()}`;
-                    const res = await fetch(url);
-
-                    if (!res.ok) {
-                        throw new Error(`Failed to fetch game script: ${res.status}`);
+                    const targets = getGameTargets(game).filter(t => t.path);
+                    if (targets.length === 0) {
+                        throw new Error('No script path found for this game');
                     }
 
-                    const data = await res.json();
-
-                    currentParsedTabs = parseGameFeatures(data);
-
-                    if (currentParsedTabs.length > 0) {
-                        renderModalTabs(currentParsedTabs);
-                    } else {
-                        mLoader.textContent = "No features found.";
+                    if (targets.length > 1) {
+                        mSubplaceRow.style.display = 'flex';
+                        targets.forEach((target, idx) => {
+                            const opt = document.createElement('option');
+                            opt.value = String(idx);
+                            opt.textContent = target.label || `Mode ${idx + 1}`;
+                            mSubplaceSelect.appendChild(opt);
+                        });
                     }
+
+                    const loadTarget = async (index) => {
+                        const target = targets[index] || targets[0];
+                        if (!target) return;
+                        mPlayBtn.href = `https://www.roblox.com/games/${target.id || getPrimaryId(game.id)}`;
+                        mLoader.style.display = 'block';
+                        mLoader.textContent = 'Fetching features...';
+                        mContent.style.display = 'none';
+                        mTabs.innerHTML = '';
+                        mFeaturesGrid.innerHTML = '';
+                        await loadModalFeaturesByPath(target.path);
+                    };
+
+                    mSubplaceSelect.onchange = () => {
+                        const selectedIndex = Number(mSubplaceSelect.value) || 0;
+                        loadTarget(selectedIndex).catch(err => {
+                            console.error(err);
+                            mLoader.style.display = 'block';
+                            mLoader.textContent = "Failed to load features.";
+                            mContent.style.display = 'none';
+                        });
+                    };
+
+                    await loadTarget(0);
                 } catch (err) {
                     console.error(err);
                     mLoader.textContent = "Failed to load features.";
@@ -1512,8 +1612,7 @@
                     const res = await fetch('https://raw.githubusercontent.com/7yd7/Hub4V/refs/heads/Menu/Script/Games.json');
                     const data = await res.json();
                     const entries = Object.values(data);
-
-                    const placeIds = entries.map(e => e.id).join(',');
+                    const placeIds = entries.map(e => getPrimaryId(e.id)).filter(Boolean).join(',');
                     let thumbMap = {};
                     try {
                         const thumbRes = await fetch(`https://thumbnails.roproxy.com/v1/places/gameicons?placeIds=${placeIds}&returnPolicy=PlaceHolder&size=512x512&format=Png&isCircular=false`);
@@ -1527,8 +1626,9 @@
                         return {
                             id: e.id, name: e.name, category: e.category,
                             status: e.status || '0', version: e.version || '?',
-                            thumbnail: thumbMap[e.id] || '',
-                            path: e.path || ''
+                            thumbnail: thumbMap[getPrimaryId(e.id)] || '',
+                            path: e.path || '',
+                            subplaces: e.subplaces || {}
                         };
                     });
 

@@ -123,6 +123,89 @@ local function collectIcons(tabs, set)
     end
 end
 
+local function idMatches(targetId, placeId)
+    if targetId == nil then return false end
+
+    if type(targetId) == "table" then
+        for _, candidate in pairs(targetId) do
+            if tostring(candidate) == tostring(placeId) then
+                return true
+            end
+        end
+        return false
+    end
+
+    return tostring(targetId) == tostring(placeId)
+end
+
+local function entryMatchesPlace(entry, placeId)
+    if type(entry) ~= "table" then return false end
+    if idMatches(entry.id, placeId) then return true end
+    if idMatches(entry.ids, placeId) then return true end
+    return false
+end
+
+local function resolveGameMatch(games, placeId)
+    local fallbackGame = nil
+
+    for _, g in pairs(games) do
+        local subplaces = g.subplaces
+        if type(subplaces) == "table" then
+            for subName, sub in pairs(subplaces) do
+                if type(sub) == "table" and entryMatchesPlace(sub, placeId) then
+                    return {
+                        game = g,
+                        path = sub.path,
+                        subName = subName,
+                        name = sub.name or subName or g.name,
+                    }
+                end
+            end
+        end
+
+        if entryMatchesPlace(g, placeId) then
+            fallbackGame = {
+                game = g,
+                path = g.path,
+                subName = nil,
+                name = g.name,
+            }
+        end
+    end
+
+    return fallbackGame
+end
+
+local function buildConfigCandidates(pathValue, subName)
+    if type(pathValue) ~= "string" or pathValue == "" then
+        return {}
+    end
+
+    if pathValue:sub(-5):lower() == ".json" then
+        return { pathValue }
+    end
+
+    local candidates = { pathValue .. ".json" }
+    if subName and subName ~= "" then
+        table.insert(candidates, pathValue .. "/" .. subName .. ".json")
+    end
+    return candidates
+end
+
+local function fetchGameConfig(pathValue, subName)
+    local candidates = buildConfigCandidates(pathValue, subName)
+    for _, candidatePath in ipairs(candidates) do
+        local raw = Engine.Fetch("Script/Games/" .. candidatePath)
+        if raw then
+            local sDec, gData = pcall(function() return HttpService:JSONDecode(raw) end)
+            if sDec and gData then
+                return gData, candidatePath
+            end
+        end
+    end
+    return nil, nil
+end
+
 function Engine.LoadAndBuild(adapter)
     local rawData, gamesDataRaw
     local fetchThreads = 2
@@ -149,18 +232,15 @@ function Engine.LoadAndBuild(adapter)
     if gamesDataRaw then
         local sDec, games = pcall(function() return HttpService:JSONDecode(gamesDataRaw) end)
         if sDec then
-            local currentGame
-            for _, g in pairs(games) do
-                if tostring(g.id) == tostring(game.PlaceId) then currentGame = g break end
-            end
+            local resolvedGame = resolveGameMatch(games, game.PlaceId)
 
-            if currentGame and currentGame.path then
-                local gameConfigRaw = Engine.Fetch("Script/Games/" .. currentGame.path)
-                if gameConfigRaw then
-                    local sDec2, gData = pcall(function() return HttpService:JSONDecode(gameConfigRaw) end)
-                    if sDec2 and gData then
-                        currentGameData = gData
-                        currentGameName = currentGame.name
+            if resolvedGame and resolvedGame.path then
+                local gData, matchedPath = fetchGameConfig(resolvedGame.path, resolvedGame.subName)
+                if gData then
+                    currentGameData = gData
+                    currentGameName = resolvedGame.name
+                    if getgenv().NEXS_DEBUG_GAMES then
+                        warn(string.format("[7yd7 Engine] Matched PlaceId=%s -> %s", tostring(game.PlaceId), tostring(matchedPath or resolvedGame.path)))
                     end
                 end
             end

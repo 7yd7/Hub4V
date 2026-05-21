@@ -111,12 +111,18 @@
         "status": "1",
         "category": "More"
     },
-     "50 Days on a Raft": {
-        "id": "77634959918754",
+    "50 Days on a Raft": {
+        "id": "74768930103590",
         "name": "50 Days on a Raft",
-        "path": "50DaysOnARaft.json",
         "version": "1.0.0",
         "status": "1",
-        "category": "More"
+        "category": "More",
+        "subplaces": {
+            "InGame": {
+                "id": "77634959918754",
+                "name": "50 Days on a Raft",
+                "path": "50DaysOnARaft/InGame.json"
+            }
+        }
     }
 }
