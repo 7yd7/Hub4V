@@ -2,12 +2,10 @@
     "Tabs": [
         {
             "Title": "Auto Matic",
-            "Icon": "",
             "Elements": [
                 {
                     "Type": "Section",
-                    "Title": "Steal",
-                    "Icon": "I-settings"
+                    "Title": "Steal"
                 },
                 {
                     "Type": "Logic",
@@ -16,8 +14,7 @@
                 },
                 {
                     "Type": "Section",
-                    "Title": "Coin & Collect",
-                    "Icon": "I-settings"
+                    "Title": "Coin & Collect"
                 },
                 {
                     "Type": "Logic",
@@ -28,7 +25,6 @@
         },
         {
             "Title": "Shop",
-            "Icon": "",
             "Elements": [
                 {
                     "Type": "Logic",
@@ -42,8 +38,7 @@
                 },
                 {
                     "Type": "Section",
-                    "Title": "Auto Open Crate",
-                    "Icon": "I-package"
+                    "Title": "Auto Open Crate"
                 },
                 {
                     "Type": "Logic",
@@ -54,7 +49,6 @@
         },
         {
             "Title": "More",
-            "Icon": "",
             "Elements": [
                 {
                     "Type": "Section",

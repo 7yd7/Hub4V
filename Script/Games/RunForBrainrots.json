@@ -2,12 +2,10 @@
     "Tabs": [
         {
             "Title": "Auto Matic",
-            "Icon": "",
             "Elements": [
                 {
                     "Type": "Section",
-                    "Title": "Farm Settings",
-                    "Icon": "I-settings"
+                    "Title": "Brainrot"
                 },
                 {
                     "Type": "Logic",
@@ -16,8 +14,7 @@
                 },
                 {
                     "Type": "Section",
-                    "Title": "Collect",
-                    "Icon": ""
+                    "Title": "Collect"
                 },
                 {
                     "Type": "Logic",
@@ -28,12 +25,10 @@
         },
         {
             "Title": "Teleport",
-            "Icon": "I-navigation",
             "Elements": [
                 {
                     "Type": "Section",
-                    "Title": "Teleport Locations",
-                    "Icon": "I-map"
+                    "Title": "Teleport Locations"
                 },
                 {
                     "Type": "Logic",
@@ -44,12 +39,10 @@
         },
         {
             "Title": "Shop",
-            "Icon": "I-shopping-cart",
             "Elements": [
                 {
                     "Type": "Section",
-                    "Title": "Auto Buy",
-                    "Icon": "I-zap"
+                    "Title": "Auto Buy"
                 },
                 {
                     "Type": "Logic",

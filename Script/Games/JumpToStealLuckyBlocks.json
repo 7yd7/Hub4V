@@ -5,8 +5,7 @@
                      "Elements":  [
                                       {
                                           "Type":  "Section",
-                                          "Title":  "Lucky Block",
-                                          "Icon":  "I-settings"
+                                          "Title":  "Lucky Block"
                                       },
                                       {
                                           "Type":  "Logic",

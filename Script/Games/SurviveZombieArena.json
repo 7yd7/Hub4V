@@ -5,8 +5,7 @@
             "Elements": [
                 {
                     "Type": "Section",
-                    "Title": "Gun & Weapon",
-                    "Icon": "I-settings"
+                    "Title": "Gun & Weapon"
                 },
                 {
                     "Type": "Logic",
@@ -18,8 +17,7 @@
                 },
                 {
                     "Type": "Section",
-                    "Title": "More",
-                    "Icon": "I-settings"
+                    "Title": "More"
                 },
                 {
                     "Type": "Logic",

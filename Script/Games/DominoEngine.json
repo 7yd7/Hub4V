@@ -5,8 +5,7 @@
                      "Elements":  [
                                       {
                                           "Type":  "Section",
-                                          "Title":  "Place",
-                                          "Icon":  "I-settings"
+                                          "Title":  "Place"
                                       },
                                       {
                                           "Type":  "Logic",
