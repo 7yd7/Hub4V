@@ -57,6 +57,10 @@
             "Icon": "",
             "Elements": [
                 {
+                    "Type": "Section",
+                    "Title": "Disaster"
+                },
+                {
                     "Type": "Logic",
                     "id": "MoreLogic",
                     "Script": "getgenv().DeleteDisasterEnabled = false; Value:AddToggle('DeleteDisaster', {Title = 'Delete Disaster', Default = false, Callback = function(V) getgenv().DeleteDisasterEnabled = V; if V then task.spawn(function() while getgenv().DeleteDisasterEnabled do pcall(function() local folder = workspace:FindFirstChild('DisasterItems'); if folder then for _, item in ipairs(folder:GetChildren()) do item:Destroy() end end end); task.wait(0.5) end end) end end})"
