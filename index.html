@@ -1164,7 +1164,6 @@
         </div>
 
         <script>
-            // â”€â”€ Theme â”€â”€
             const toggle = document.getElementById('themeToggle');
             const html = document.documentElement;
             let lastScrollY = window.scrollY;
@@ -1177,7 +1176,6 @@
                 localStorage.setItem('hub4v-theme', next);
             });
 
-            // Ambient mouse move tracking for grid masking
             document.addEventListener('mousemove', (e) => {
                 const x = (e.clientX / window.innerWidth) * 100;
                 const y = (e.clientY / window.innerHeight) * 100;
@@ -1199,7 +1197,6 @@
                 requestAnimationFrame(handleTopUiVisibility);
             }, { passive: true });
 
-            // â”€â”€ Copy â”€â”€
             const copyField = document.getElementById('copyField');
             const copyText = document.getElementById('copyText');
             let copyTimeout;
@@ -1212,10 +1209,9 @@
                 clearTimeout(copyTimeout);
                 copyTimeout = setTimeout(() => {
                     copyField.classList.remove('copied');
-                }, 1200); // Quick checkmark animation timeout
+                }, 1200); 
             });
 
-            // â”€â”€ Games â”€â”€
             const grid = document.getElementById('gamesGrid');
             const searchInput = document.getElementById('searchInput');
             const categoriesEl = document.getElementById('categories');
@@ -1266,14 +1262,12 @@
                     </div>
                 `;
 
-                    // Add click event to open modal
                     card.addEventListener('click', () => openGameModal(g));
 
                     grid.appendChild(card);
                 });
             }
 
-            // â”€â”€ MODAL LOGIC â”€â”€
             const modal = document.getElementById('gameModal');
             const mCloseBtn = document.getElementById('mCloseBtn');
             const mTitle = document.getElementById('mTitle');
@@ -1303,7 +1297,6 @@
                 mTitle.textContent = game.name;
                 mPlayBtn.href = `https://www.roblox.com/games/${game.id}`;
 
-                // Set badge
                 mBadge.style.borderColor = game.status === '1' ? 'rgba(52,211,153,0.2)' : (game.status === '2' ? 'rgba(251,191,36,0.2)' : 'rgba(248,113,113,0.2)');
                 mBadge.style.background = game.status === '1' ? 'rgba(52,211,153,0.05)' : (game.status === '2' ? 'rgba(251,191,36,0.05)' : 'rgba(248,113,113,0.05)');
                 mBadge.style.color = game.status === '1' ? '#34d399' : (game.status === '2' ? '#fbbf24' : '#f87171');
@@ -1316,7 +1309,6 @@
                 mFeaturesGrid.innerHTML = '';
 
                 try {
-                    // Fetch the game's specific json script with a cache-buster
                     const scriptPath = game.path || `${String(game.name || '').replace(/[^a-zA-Z0-9]/g, '')}.json`;
                     const url = `https://raw.githubusercontent.com/7yd7/Hub4V/refs/heads/Menu/Script/Games/${encodeURIComponent(scriptPath)}?t=${Date.now()}`;
                     const res = await fetch(url);
@@ -1344,6 +1336,34 @@
                 if (!data || !data.Tabs) return [];
                 let parsedTabs = [];
 
+                function extractLogicFeatures(script) {
+                    const features = [];
+                    if (!script) return features;
+
+                    const masterRegex = /Value:Add(Toggle|Button|Slider|Input|Dropdown)\s*\(/g;
+                    const seen = new Set();
+                    let callMatch;
+
+                    while ((callMatch = masterRegex.exec(script)) !== null) {
+                        const afterCall = script.substring(callMatch.index + callMatch[0].length);
+
+                        const braceIdx = afterCall.indexOf('{');
+                        if (braceIdx === -1) continue;
+
+                        const afterBrace = afterCall.substring(braceIdx);
+                        const titleMatch = afterBrace.match(/Title\s*=\s*['"]([^'"]+)['"]/);
+                        if (titleMatch && titleMatch[1]) {
+                            const title = titleMatch[1].trim();
+                            if (!seen.has(title)) {
+                                seen.add(title);
+                                features.push(title);
+                            }
+                        }
+                    }
+
+                    return features;
+                }
+
                 data.Tabs.forEach(tab => {
                     let pTab = { title: tab.Title || "Main", sections: [] };
                     let currentSection = { title: "General", features: [] };
@@ -1354,14 +1374,8 @@
                                 if (currentSection.features.length > 0) pTab.sections.push(currentSection);
                                 currentSection = { title: el.Title || el.SectionTitle || "General", features: [] };
                             } else if (el.Type === "Logic" && el.Script) {
-                                // Use regex to extract all Title = '...' or "..." from the lua script
-                                const regex = /Title\s*=\s*['"]([^'"]+)['"]/g;
-                                let match;
-                                while ((match = regex.exec(el.Script)) !== null) {
-                                    if (match[1] && !match[1].toLowerCase().includes('select')) {
-                                        currentSection.features.push(match[1]);
-                                    }
-                                }
+                                const extracted = extractLogicFeatures(el.Script);
+                                extracted.forEach(f => currentSection.features.push(f));
                             } else if (el.Title) {
                                 currentSection.features.push(el.Title);
                             }
@@ -1390,7 +1404,6 @@
                     mTabs.appendChild(btn);
                 });
 
-                // Render the first tab by default
                 if (tabs.length > 0) renderModalFeatures(tabs[0].sections);
             }
 
@@ -1401,7 +1414,6 @@
                     mFeaturesGrid.style.animation = 'featureIn 0.25s ease';
                 });
                 sections.forEach(sec => {
-                    // Remove duplicates just in case
                     const uniqueFeatures = [...new Set(sec.features)];
                     if (uniqueFeatures.length === 0) return;
 
@@ -1436,7 +1448,6 @@
 
             searchInput.addEventListener('input', renderGames);
 
-            // Touch hover: enlarge card on touch without requiring click
             let touchHoverTimeout;
             grid.addEventListener('touchstart', (e) => {
                 const card = e.target.closest('.game-card');
@@ -1458,20 +1469,16 @@
                 document.querySelectorAll('.game-card.touch-hover').forEach(c => c.classList.remove('touch-hover'));
             }, { passive: true });
 
-            // â”€â”€ Load data from GitHub & Roblox API â”€â”€
             async function init() {
                 showSkeletons(8);
                 try {
-                    // 1. Fetch JSON
                     const res = await fetch('https://raw.githubusercontent.com/7yd7/Hub4V/refs/heads/Menu/Script/Games.json');
                     const data = await res.json();
                     const entries = Object.values(data);
 
-                    // 2. Batch fetch thumbnails
                     const placeIds = entries.map(e => e.id).join(',');
                     let thumbMap = {};
                     try {
-                        // Using RoProxy to bypass CORS block on browser
                         const thumbRes = await fetch(`https://thumbnails.roproxy.com/v1/places/gameicons?placeIds=${placeIds}&returnPolicy=PlaceHolder&size=512x512&format=Png&isCircular=false`);
                         const thumbData = await thumbRes.json();
                         thumbData.data?.forEach(t => { thumbMap[t.targetId] = t.imageUrl || ''; });
@@ -1495,7 +1502,6 @@
                     grid.innerHTML = '<div class="empty-state">Failed to load games.</div>';
                 }
 
-                // Load WEAO Executors Ambient Background
                 try {
                     const bgContainer = document.getElementById('executorsBgContainer');
                     if (bgContainer) {
@@ -1513,21 +1519,20 @@
                                 el.src = logoUrl;
                                 el.onerror = () => { el.style.display = 'none'; };
                                 
-                                // Randomize starting position, movement path, and duration
                                 const startX = Math.random() * 100;
                                 const startY = Math.random() * 100;
-                                const size = Math.random() * 50 + 30; // Increased size: 30px to 80px
+                                const size = Math.random() * 50 + 30; 
                                 const tx = (Math.random() - 0.5) * 600 + 'px';
                                 const ty = (Math.random() - 0.5) * 600 + 'px';
                                 const rot = (Math.random() - 0.5) * 720 + 'deg';
-                                const duration = Math.random() * 20 + 25; // 25s to 45s
-                                const delay = Math.random() * -40; // Negative delay to start mid-animation
+                                const duration = Math.random() * 20 + 25; 
+                                const delay = Math.random() * -40;
                                 
                                 el.style.left = `${startX}vw`;
                                 el.style.top = `${startY}vh`;
                                 el.style.width = `${size}px`;
                                 el.style.height = `${size}px`;
-                                el.style.opacity = Math.random() * 0.4 + 0.1; // Varied opacity for depth
+                                el.style.opacity = Math.random() * 0.4 + 0.1; 
                                 el.style.setProperty('--tx', tx);
                                 el.style.setProperty('--ty', ty);
                                 el.style.setProperty('--rot', rot);
