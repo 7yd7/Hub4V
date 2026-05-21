@@ -1,47 +1,75 @@
-{
-    "Tabs": [
-        {
-            "Title": "Auto Mine",
-            "SectionTitle": "Mining Settings",
-            "Elements": [
-                {
-                    "Type": "Logic",
-                    "Script": "local zones = {}; local folder = workspace:FindFirstChild('MineZones'); if folder then for _, z in ipairs(folder:GetChildren()) do table.insert(zones, z.Name) end end; getgenv().MineTarget = zones[1] or ''; Value:AddDropdown('MineZone', {Title = 'Select Zone', Values = zones, Default = getgenv().MineTarget, Callback = function(V) getgenv().MineTarget = V end}); Value:AddToggle('AutoMineToggle', {Title = 'Start Mining', Default = false, Callback = function(V) getgenv().AutoMine = V; if V then task.spawn(function() local lp = game.Players.LocalPlayer; local remotes = game:GetService('ReplicatedStorage'):FindFirstChild('Remotes'); if not remotes then return end; local sellPos = Vector3.new(90, 3, -368); while getgenv().AutoMine do local targetFolder = workspace:FindFirstChild('MineZones'); local target = targetFolder and targetFolder:FindFirstChild(getgenv().MineTarget); if target and lp.Character and lp.Character:FindFirstChild('HumanoidRootPart') then lp.Character.HumanoidRootPart.CFrame = target:GetPivot(); task.wait(0.05); pcall(function() remotes.MineRequest:InvokeServer(); remotes.FinishMine:FireServer() end); if lp:GetAttribute('Carrying') == true then lp.Character.HumanoidRootPart.CFrame = CFrame.new(sellPos); task.wait(0.2) end end; task.wait(0.1) end end) end end}); Value:AddToggle('FastBreak', {Title = 'Use Pickaxe Break', Default = false, Callback = function(V) getgenv().FastBreak = V; if V then task.spawn(function() local remotes = game:GetService('ReplicatedStorage'):FindFirstChild('Remotes'); local hitbox = game:GetService('ReplicatedStorage'):FindFirstChild('HitboxClassRemote'); while getgenv().FastBreak do pcall(function() if remotes and remotes:FindFirstChild('BlockBreakingRequest') then remotes.BlockBreakingRequest:FireServer() end; if hitbox then hitbox:FireServer(math.huge) end end); task.wait() end end) end end})"
-                }
-            ]
-        },
-        {
-            "Title": "Auto Collect",
-            "SectionTitle": "Picking Items & Selling",
-            "Elements": [
-                {
-                    "Type": "Logic",
-                    "Script": "getgenv().CollectSpeed = 1; Value:AddSlider('CollectSpeed', {Title = 'Collect Delay', Min = 0.1, Max = 10, Default = 1, Rounding = 0.1, Callback = function(V) getgenv().CollectSpeed = V end}); Value:AddToggle('AutoCollect', {Title = 'Auto Collect', Default = false, Callback = function(V) getgenv().AutoCollect = V; if V then task.spawn(function() local lp = game.Players.LocalPlayer; local remote = game:GetService('ReplicatedStorage').Remotes.CollectRequest; while getgenv().AutoCollect do local plotName = lp.Name .. 'Plot'; local plot = workspace.Plots:FindFirstChild(plotName); local brainrots = plot and plot:FindFirstChild('Brainrots'); if brainrots then for _, br in ipairs(brainrots:GetChildren()) do if not getgenv().AutoCollect then break end; pcall(function() remote:FireServer(br.Name) end) end end; task.wait(getgenv().CollectSpeed or 1) end end) end end}); Value:AddButton({Title = 'Collect All Once', Callback = function() local lp = game.Players.LocalPlayer; local remote = game:GetService('ReplicatedStorage').Remotes.CollectRequest; local plotName = lp.Name .. 'Plot'; local plot = workspace.Plots:FindFirstChild(plotName); local brainrots = plot and plot:FindFirstChild('Brainrots'); if brainrots then for _, br in ipairs(brainrots:GetChildren()) do pcall(function() remote:FireServer(br.Name) end) end end end}); local function sellAll() local lp = game.Players.LocalPlayer; local remote = game:GetService('ReplicatedStorage').Remotes.SellInventoryBrainrotsRequest; local toolRef = game:GetService('ReplicatedStorage').Tools.Brainrots; local toSell = {}; for _, tool in ipairs(lp.Backpack:GetChildren()) do if toolRef:FindFirstChild(tool.Name) then table.insert(toSell, tool) end end; if #toSell > 0 then remote:FireServer(toSell) end end; Value:AddButton({Title = 'Sell Everything Once Brainrots', Callback = sellAll}); Value:AddToggle('AutoSell', {Title = 'Auto Sell All', Default = false, Callback = function(V) getgenv().AutoSell = V; if V then task.spawn(function() while getgenv().AutoSell do pcall(sellAll); task.wait(1) end end) end end})"
-                }
-            ]
-        },
-        {
-            "Title": "Shop",
-            "Elements": [
-                {
-                    "Type": "Logic",
-                    "Script": "local function formatPrice(txt) local n = tonumber(txt:match('[%d%.]+')); if not n then return 0 end; local s = txt:lower():match('[kmbt]'); if s == 'k' then n = n * 10^3 elseif s == 'm' then n = n * 10^6 elseif s == 'b' then n = n * 10^9 elseif s == 't' then n = n * 10^12 end; return n end; local axes = {}; local shop = workspace:FindFirstChild('BuyablePickaxes'); if shop then for _, item in ipairs(shop:GetChildren()) do local prompt = item:FindFirstChildWhichIsA('ProximityPrompt', true); local priceText = prompt and prompt.ActionText or '0'; table.insert(axes, {Name = item.Name, Price = formatPrice(priceText), Display = item.Name .. ' (' .. priceText .. ')'}) end end; table.sort(axes, function(a,b) return a.Price < b.Price end); local list = {}; local map = {}; for _, v in ipairs(axes) do table.insert(list, v.Display); map[v.Display] = v.Name end; getgenv().SelectedPickaxe = list[1] or ''; Value:AddDropdown('PickaxeSelect', {Title = 'Select Pickaxe', Values = list, Default = getgenv().SelectedPickaxe, Callback = function(V) getgenv().SelectedPickaxe = V end}); Value:AddButton({Title = 'Buy & Equip Pickaxe', Callback = function() local name = map[getgenv().SelectedPickaxe]; if name then local r = game:GetService('ReplicatedStorage').Remotes; r.PickaxeBuyRequest:FireServer(name); r.PickaxeEquipRequest:FireServer(name) end end})"
-                },
-                {
-                    "Type": "Logic",
-                    "Script": "local function formatPrice(txt) local n = tonumber(txt:match('[%d%.]+')); if not n then return 0 end; local s = txt:lower():match('[kmbt]'); if s == 'k' then n = n * 10^3 elseif s == 'm' then n = n * 10^6 elseif s == 'b' then n = n * 10^9 elseif s == 't' then n = n * 10^12 end; return n end; local weapons = {}; local shop = workspace:FindFirstChild('BuyableWeapons'); if shop then for _, item in ipairs(shop:GetChildren()) do local prompt = item:FindFirstChildWhichIsA('ProximityPrompt', true); local priceText = prompt and prompt.ActionText or '0'; table.insert(weapons, {Name = item.Name, Price = formatPrice(priceText), Display = item.Name .. ' (' .. priceText .. ')'}) end end; table.sort(weapons, function(a,b) return a.Price < b.Price end); local list = {}; local map = {}; for _, v in ipairs(weapons) do table.insert(list, v.Display); map[v.Display] = v.Name end; getgenv().SelectedWeapon = list[1] or ''; Value:AddDropdown('WeaponSelect', {Title = 'Select Weapon', Values = list, Default = getgenv().SelectedWeapon, Callback = function(V) getgenv().SelectedWeapon = V end}); Value:AddButton({Title = 'Buy & Equip Weapon', Callback = function() local name = map[getgenv().SelectedWeapon]; if name then local r = game:GetService('ReplicatedStorage').Remotes; r.WeaponBuyRequest:FireServer(name); r.WeaponEquipRequest:FireServer(name) end end})"
-                }
-            ]
-        },
-        {
-            "Title": "Lucky Blocks",
-            "SectionTitle": "Place Blocks",
-            "Elements": [
-                {
-                    "Type": "Logic",
-                    "Script": "local lp = game.Players.LocalPlayer; local lastBlocks = ''; local function getUniqueBlocks() local names = {'All'}; local seen = {}; local str = 'All,'; for _, tool in ipairs(lp.Backpack:GetChildren()) do local n = tool.Name; if n:lower():find('lucky') and not seen[n] then table.insert(names, n); seen[n] = true; str = str .. n .. ',' end end; return names, str end; local initialBlocks, initialStr = getUniqueBlocks(); lastBlocks = initialStr; getgenv().SelectedBlock = 'All'; local dropdown = Value:AddDropdown('BlockSelector', {Title = 'Select Block Type', Values = initialBlocks, Default = 'All', Callback = function(V) getgenv().SelectedBlock = V end}); task.spawn(function() while task.wait(2) do local current, currentStr = getUniqueBlocks(); if currentStr ~= lastBlocks then lastBlocks = currentStr; if dropdown.Refresh then dropdown:Refresh(current) elseif dropdown.SetValues then dropdown:SetValues(current) end end end end); local function place(batch) local char = lp.Character; local root = char and char:FindFirstChild('HumanoidRootPart'); if not root then return end; local remote = game:GetService('ReplicatedStorage').Remotes.PlacingRequest; local selected = getgenv().SelectedBlock; if selected == 'All' then for _, tool in ipairs(lp.Backpack:GetChildren()) do if tool.Name:lower():find('lucky') then tool.Parent = char; remote:FireServer(root.CFrame); if not batch then break end end end else if batch then for _, tool in ipairs(lp.Backpack:GetChildren()) do if tool.Name == selected then tool.Parent = char; remote:FireServer(root.CFrame) end end else local tool = lp.Backpack:FindFirstChild(selected); if tool then tool.Parent = char; remote:FireServer(root.CFrame) end end end end; Value:AddButton({Title = 'Place 1', Callback = function() place(false) end}); Value:AddButton({Title = 'Place All', Callback = function() place(true) end})"
-                }
-            ]
-        }
-    ]
+﻿{
+    "Tabs":  [
+                 {
+                     "Title":  "Auto Mine",
+                     "SectionTitle":  "Mining Settings",
+                     "Elements":  [
+                                      {
+                                          "Type":  "Section",
+                                          "Title":  "Mining"
+                                      },
+                                      {
+                                          "Type":  "Logic",
+                                          "Script":  "local zones = {}; local folder = workspace:FindFirstChild(\u0027MineZones\u0027); if folder then for _, z in ipairs(folder:GetChildren()) do table.insert(zones, z.Name) end end; getgenv().MineTarget = zones[1] or \u0027\u0027; Value:AddDropdown(\u0027MineZone\u0027, {Title = \u0027Select Zone\u0027, Values = zones, Default = getgenv().MineTarget, Callback = function(V) getgenv().MineTarget = V end}); Value:AddToggle(\u0027AutoMineToggle\u0027, {Title = \u0027Start Mining\u0027, Default = false, Callback = function(V) getgenv().AutoMine = V; if V then task.spawn(function() local lp = game.Players.LocalPlayer; local remotes = game:GetService(\u0027ReplicatedStorage\u0027):FindFirstChild(\u0027Remotes\u0027); if not remotes then return end; local sellPos = Vector3.new(90, 3, -368); while getgenv().AutoMine do local targetFolder = workspace:FindFirstChild(\u0027MineZones\u0027); local target = targetFolder and targetFolder:FindFirstChild(getgenv().MineTarget); if target and lp.Character and lp.Character:FindFirstChild(\u0027HumanoidRootPart\u0027) then lp.Character.HumanoidRootPart.CFrame = target:GetPivot(); task.wait(0.05); pcall(function() remotes.MineRequest:InvokeServer(); remotes.FinishMine:FireServer() end); if lp:GetAttribute(\u0027Carrying\u0027) == true then lp.Character.HumanoidRootPart.CFrame = CFrame.new(sellPos); task.wait(0.2) end end; task.wait(0.1) end end) end end}); Value:AddToggle(\u0027FastBreak\u0027, {Title = \u0027Use Pickaxe Break\u0027, Default = false, Callback = function(V) getgenv().FastBreak = V; if V then task.spawn(function() local remotes = game:GetService(\u0027ReplicatedStorage\u0027):FindFirstChild(\u0027Remotes\u0027); local hitbox = game:GetService(\u0027ReplicatedStorage\u0027):FindFirstChild(\u0027HitboxClassRemote\u0027); while getgenv().FastBreak do pcall(function() if remotes and remotes:FindFirstChild(\u0027BlockBreakingRequest\u0027) then remotes.BlockBreakingRequest:FireServer() end; if hitbox then hitbox:FireServer(math.huge) end end); task.wait() end end) end end})"
+                                      }
+                                  ]
+                 },
+                 {
+                     "Title":  "Auto Collect",
+                     "SectionTitle":  "Picking Items & Selling",
+                     "Elements":  [
+                                      {
+                                          "Type":  "Section",
+                                          "Title":  "Collect"
+                                      },
+                                      {
+                                          "Type":  "Logic",
+                                          "Script":  "getgenv().CollectSpeed = 1\nValue:AddSlider(\u0027CollectSpeed\u0027, {\n    Title = \u0027Collect Delay\u0027,\n    Min = 0.1,\n    Max = 10,\n    Default = 1,\n    Rounding = 0.1,\n    Callback = function(V)\n        getgenv().CollectSpeed = V\n    end\n})\nValue:AddToggle(\u0027AutoCollect\u0027, {\n    Title = \u0027Auto Collect\u0027,\n    Default = false,\n    Callback = function(V)\n        getgenv().AutoCollect = V\n        if V then\n            task.spawn(function()\n                local lp = game.Players.LocalPlayer\n                local remote = game:GetService(\u0027ReplicatedStorage\u0027).Remotes.CollectRequest\n                while getgenv().AutoCollect do\n                    local plotName = lp.Name .. \u0027Plot\u0027\n                    local plot = workspace.Plots:FindFirstChild(plotName)\n                    local brainrots = plot and plot:FindFirstChild(\u0027Brainrots\u0027)\n                    if brainrots then\n                        for _, br in ipairs(brainrots:GetChildren()) do\n                            if not getgenv().AutoCollect then break end\n                            pcall(function()\n                                remote:FireServer(br.Name)\n                            end)\n                        end\n                    end\n                    task.wait(getgenv().CollectSpeed or 1)\n                end\n            end)\n        end\n    end\n})\nValue:AddButton({\n    Title = \u0027Collect All Once\u0027,\n    Callback = function()\n        local lp = game.Players.LocalPlayer\n        local remote = game:GetService(\u0027ReplicatedStorage\u0027).Remotes.CollectRequest\n        local plotName = lp.Name .. \u0027Plot\u0027\n        local plot = workspace.Plots:FindFirstChild(plotName)\n        local brainrots = plot and plot:FindFirstChild(\u0027Brainrots\u0027)\n        if brainrots then\n            for _, br in ipairs(brainrots:GetChildren()) do\n                pcall(function()\n                    remote:FireServer(br.Name)\n                end)\n            end\n        end\n    end\n})"
+                                      },
+                                      {
+                                          "Type":  "Section",
+                                          "Title":  "Sell"
+                                      },
+                                      {
+                                          "Type":  "Logic",
+                                          "Script":  "local function sellAll()\n    local lp = game.Players.LocalPlayer\n    local remote = game:GetService(\u0027ReplicatedStorage\u0027).Remotes.SellInventoryBrainrotsRequest\n    local toolRef = game:GetService(\u0027ReplicatedStorage\u0027).Tools.Brainrots\n    local toSell = {}\n    for _, tool in ipairs(lp.Backpack:GetChildren()) do\n        if toolRef:FindFirstChild(tool.Name) then\n            table.insert(toSell, tool)\n        end\n    end\n    if #toSell \u003e 0 then\n        remote:FireServer(toSell)\n    end\nend\nValue:AddButton({\n    Title = \u0027Sell Everything Once Brainrots\u0027,\n    Callback = sellAll\n})\nValue:AddToggle(\u0027AutoSell\u0027, {\n    Title = \u0027Auto Sell All\u0027,\n    Default = false,\n    Callback = function(V)\n        getgenv().AutoSell = V\n        if V then\n            task.spawn(function()\n                while getgenv().AutoSell do\n                    pcall(sellAll)\n                    task.wait(1)\n                end\n            end)\n        end\n    end\n})"
+                                      }
+                                  ]
+                 },
+                 {
+                     "Title":  "Shop",
+                     "Elements":  [
+                                      {
+                                          "Type":  "Section",
+                                          "Title":  "Buy Pickaxes"
+                                      },
+                                      {
+                                          "Type":  "Logic",
+                                          "Script":  "local function formatPrice(txt) local n = tonumber(txt:match(\u0027[%d%.]+\u0027)); if not n then return 0 end; local s = txt:lower():match(\u0027[kmbt]\u0027); if s == \u0027k\u0027 then n = n * 10^3 elseif s == \u0027m\u0027 then n = n * 10^6 elseif s == \u0027b\u0027 then n = n * 10^9 elseif s == \u0027t\u0027 then n = n * 10^12 end; return n end; local axes = {}; local shop = workspace:FindFirstChild(\u0027BuyablePickaxes\u0027); if shop then for _, item in ipairs(shop:GetChildren()) do local prompt = item:FindFirstChildWhichIsA(\u0027ProximityPrompt\u0027, true); local priceText = prompt and prompt.ActionText or \u00270\u0027; table.insert(axes, {Name = item.Name, Price = formatPrice(priceText), Display = item.Name .. \u0027 (\u0027 .. priceText .. \u0027)\u0027}) end end; table.sort(axes, function(a,b) return a.Price \u003c b.Price end); local list = {}; local map = {}; for _, v in ipairs(axes) do table.insert(list, v.Display); map[v.Display] = v.Name end; getgenv().SelectedPickaxe = list[1] or \u0027\u0027; Value:AddDropdown(\u0027PickaxeSelect\u0027, {Title = \u0027Select Pickaxe\u0027, Values = list, Default = getgenv().SelectedPickaxe, Callback = function(V) getgenv().SelectedPickaxe = V end}); Value:AddButton({Title = \u0027Buy \u0026 Equip Pickaxe\u0027, Callback = function() local name = map[getgenv().SelectedPickaxe]; if name then local r = game:GetService(\u0027ReplicatedStorage\u0027).Remotes; r.PickaxeBuyRequest:FireServer(name); r.PickaxeEquipRequest:FireServer(name) end end})"
+                                      },
+                                      {
+                                          "Type":  "Section",
+                                          "Title":  "Buy Weapons"
+                                      },
+                                      {
+                                          "Type":  "Logic",
+                                          "Script":  "local function formatPrice(txt) local n = tonumber(txt:match(\u0027[%d%.]+\u0027)); if not n then return 0 end; local s = txt:lower():match(\u0027[kmbt]\u0027); if s == \u0027k\u0027 then n = n * 10^3 elseif s == \u0027m\u0027 then n = n * 10^6 elseif s == \u0027b\u0027 then n = n * 10^9 elseif s == \u0027t\u0027 then n = n * 10^12 end; return n end; local weapons = {}; local shop = workspace:FindFirstChild(\u0027BuyableWeapons\u0027); if shop then for _, item in ipairs(shop:GetChildren()) do local prompt = item:FindFirstChildWhichIsA(\u0027ProximityPrompt\u0027, true); local priceText = prompt and prompt.ActionText or \u00270\u0027; table.insert(weapons, {Name = item.Name, Price = formatPrice(priceText), Display = item.Name .. \u0027 (\u0027 .. priceText .. \u0027)\u0027}) end end; table.sort(weapons, function(a,b) return a.Price \u003c b.Price end); local list = {}; local map = {}; for _, v in ipairs(weapons) do table.insert(list, v.Display); map[v.Display] = v.Name end; getgenv().SelectedWeapon = list[1] or \u0027\u0027; Value:AddDropdown(\u0027WeaponSelect\u0027, {Title = \u0027Select Weapon\u0027, Values = list, Default = getgenv().SelectedWeapon, Callback = function(V) getgenv().SelectedWeapon = V end}); Value:AddButton({Title = \u0027Buy \u0026 Equip Weapon\u0027, Callback = function() local name = map[getgenv().SelectedWeapon]; if name then local r = game:GetService(\u0027ReplicatedStorage\u0027).Remotes; r.WeaponBuyRequest:FireServer(name); r.WeaponEquipRequest:FireServer(name) end end})"
+                                      }
+                                  ]
+                 },
+                 {
+                     "Title":  "Lucky Blocks",
+                     "SectionTitle":  "Place Blocks",
+                     "Elements":  [
+                                      {
+                                          "Type":  "Section",
+                                          "Title":  "Place Lucky Blocks"
+                                      },
+                                      {
+                                          "Type":  "Logic",
+                                          "Script":  "local lp = game.Players.LocalPlayer; local lastBlocks = \u0027\u0027; local function getUniqueBlocks() local names = {\u0027All\u0027}; local seen = {}; local str = \u0027All,\u0027; for _, tool in ipairs(lp.Backpack:GetChildren()) do local n = tool.Name; if n:lower():find(\u0027lucky\u0027) and not seen[n] then table.insert(names, n); seen[n] = true; str = str .. n .. \u0027,\u0027 end end; return names, str end; local initialBlocks, initialStr = getUniqueBlocks(); lastBlocks = initialStr; getgenv().SelectedBlock = \u0027All\u0027; local dropdown = Value:AddDropdown(\u0027BlockSelector\u0027, {Title = \u0027Select Block Type\u0027, Values = initialBlocks, Default = \u0027All\u0027, Callback = function(V) getgenv().SelectedBlock = V end}); task.spawn(function() while task.wait(2) do local current, currentStr = getUniqueBlocks(); if currentStr ~= lastBlocks then lastBlocks = currentStr; if dropdown.Refresh then dropdown:Refresh(current) elseif dropdown.SetValues then dropdown:SetValues(current) end end end end); local function place(batch) local char = lp.Character; local root = char and char:FindFirstChild(\u0027HumanoidRootPart\u0027); if not root then return end; local remote = game:GetService(\u0027ReplicatedStorage\u0027).Remotes.PlacingRequest; local selected = getgenv().SelectedBlock; if selected == \u0027All\u0027 then for _, tool in ipairs(lp.Backpack:GetChildren()) do if tool.Name:lower():find(\u0027lucky\u0027) then tool.Parent = char; remote:FireServer(root.CFrame); if not batch then break end end end else if batch then for _, tool in ipairs(lp.Backpack:GetChildren()) do if tool.Name == selected then tool.Parent = char; remote:FireServer(root.CFrame) end end else local tool = lp.Backpack:FindFirstChild(selected); if tool then tool.Parent = char; remote:FireServer(root.CFrame) end end end end; Value:AddButton({Title = \u0027Place 1\u0027, Callback = function() place(false) end}); Value:AddButton({Title = \u0027Place All\u0027, Callback = function() place(true) end})"
+                                      }
+                                  ]
+                 }
+             ]
 }
