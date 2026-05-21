@@ -96,12 +96,18 @@
         "category": "Simulator"
     },
     "Survive Zombie Arena": {
-        "id": "98927955463992",
+        "id": "114204398207377",
         "name": "Survive Zombie Arena",
-        "path": "SurviveZombieArena.json",
         "version": "1.0.0",
         "status": "1",
-        "category": "More"
+        "category": "More",
+        "subplaces": {
+            "InGame": {
+                "id": "98927955463992",
+                "name": "Survive Zombie Arena",
+                "path": "SurviveZombieArena/InGame.json"
+            }
+        }
     },
     "Find Who Slapped": {
         "id": "72167803024670",
