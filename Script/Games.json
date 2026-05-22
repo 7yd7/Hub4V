@@ -130,5 +130,13 @@
                 "path": "50DaysOnARaft/InGame.json"
             }
         }
+    },
+        "Push Rock for Brainrots!": {
+        "id": "75888315541325",
+        "name": "Push Rock for Brainrots!",
+        "path": "PushRockForBrainrots.json",
+        "version": "1.0.0",
+        "status": "1",
+        "category": "Brainrots"
     }
 }
