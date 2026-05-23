@@ -1,11 +1,11 @@
 {
     "Tabs": [
         {
-            "Title": "Auto Matic",
+            "Title": "Auto Farm",
             "Elements": [
                 {
                     "Type": "Section",
-                    "Title": "Auto Farm"
+                    "Title": "Auto Matic"
                 },
                 {
                     "Type": "Logic",
@@ -28,7 +28,12 @@
                     "Type": "Button",
                     "Title": "Deposit Orb",
                     "Script": "local lp = game.Players.LocalPlayer; local function getMyPlot() local plots = workspace:FindFirstChild('Plots'); if not plots then return nil end; for _, plot in ipairs(plots:GetChildren()) do local ownerId = plot:GetAttribute('OwnerUserId') or plot:GetAttribute('OwnerUserid') or plot:GetAttribute('Owner'); if ownerId and (tonumber(ownerId) == lp.UserId or tostring(ownerId) == tostring(lp.UserId) or tostring(ownerId) == lp.Name) then return plot end end; return nil end; local myPlot = getMyPlot(); local char = lp.Character; local root = char and char:FindFirstChild('HumanoidRootPart'); if myPlot and root then local sell = myPlot:FindFirstChild('Sell'); local depositBtn = sell and sell:FindFirstChild('DepositButton'); local button = depositBtn and depositBtn:FindFirstChild('Button'); if button and button:FindFirstChild('TouchInterest') then firetouchinterest(root, button, 0); task.wait(); firetouchinterest(root, button, 1) end end"
-                },
+                }
+            ]
+        },
+        {
+            "Title": "Buy",
+            "Elements": [
                 {
                     "Type": "Section",
                     "Title": "Upgrade"
