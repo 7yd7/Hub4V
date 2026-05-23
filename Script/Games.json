@@ -138,5 +138,13 @@
         "version": "1.0.0",
         "status": "1",
         "category": "Brainrots"
+    },
+    "Pickaxe Tycoon": {
+        "id": "73814003954154",
+        "name": "Pickaxe Tycoon",
+        "path": "PickaxeTycoon.json",
+        "version": "1.0.0",
+        "status": "1",
+        "category": "Simulator"
     }
 }
