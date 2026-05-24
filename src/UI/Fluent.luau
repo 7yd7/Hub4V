@@ -88,29 +88,89 @@ function Adapter:AddTab(config)
         return Tab:AddSection(title, icon)
     end
     function Proxy:AddDropdown(id, el)
-        local initialValue = el.Default
+        local function resolveDefault(defaultValue, values, isMulti)
+            if isMulti then
+                return defaultValue
+            end
+            if type(defaultValue) == "number" and type(values) == "table" then
+                return values[defaultValue] or values[1]
+            end
+            return defaultValue
+        end
+
+        local function cloneTable(t)
+            local out = {}
+            for k, v in pairs(t or {}) do
+                out[k] = v
+            end
+            return out
+        end
+
+        local function normalizeDropdownValue(value, isMulti)
+            if not isMulti then
+                return value
+            end
+
+            if value == nil then
+                return {}
+            end
+
+            if type(value) == "table" then
+                local isArray = (value[1] ~= nil) or (#value > 0)
+                if isArray then
+                    local out = {}
+                    for _, v in ipairs(value) do
+                        out[v] = true
+                    end
+                    return out
+                end
+
+                local out = {}
+                for k, state in pairs(value) do
+                    if state == true then
+                        out[k] = true
+                    end
+                end
+                return out
+            end
+
+            if type(value) == "string" or type(value) == "number" then
+                return { [tostring(value)] = true }
+            end
+
+            return {}
+        end
+
+        local resolvedDefault = resolveDefault(el.Default, el.Values, el.Multi)
+        local initialValue = resolvedDefault
         local tracker
+        local lastKnownValue = normalizeDropdownValue(initialValue, el.Multi)
+        local changedListeners = {}
+
+        local function notifyChanged(value)
+            for _, fn in ipairs(changedListeners) do
+                pcall(fn, value)
+            end
+        end
 
         local function dropdownCallback(v)
-            if tracker then
-                tracker.Value = v
-            end
+            lastKnownValue = normalizeDropdownValue(v, el.Multi)
+            notifyChanged(lastKnownValue)
             if el.Callback then
-                el.Callback(v)
+                el.Callback(lastKnownValue)
             end
         end
 
         local d = Tab:AddDropdown(id, {
             Title = el.Title,
             Values = el.Values,
-            Default = el.Default,
+            Default = resolvedDefault,
             Multi = el.Multi,
             Callback = dropdownCallback
         })
 
         tracker = {
             Raw = d,
-            Value = initialValue,
             SetValues = function(self, values)
                 local newValues = values or {}
                 local ok = false
@@ -125,7 +185,7 @@ function Adapter:AddTab(config)
                 end
             end,
             SetValue = function(self, value)
-                self.Value = value
+                lastKnownValue = normalizeDropdownValue(value, el.Multi)
                 local ok = false
                 if d and d.SetValue then
                     ok = pcall(function() d:SetValue(value) end)
@@ -136,11 +196,35 @@ function Adapter:AddTab(config)
                 if not ok and d and d.Select then
                     pcall(function() d:Select(value) end)
                 end
+                notifyChanged(lastKnownValue)
+                if el.Callback then
+                    pcall(function() el.Callback(lastKnownValue) end)
+                end
+            end,
+            OnChanged = function(self, fn)
+                if type(fn) == "function" then
+                    table.insert(changedListeners, fn)
+                end
+                return self
             end
         }
 
+        if d and d.OnChanged then
+            pcall(function()
+                d:OnChanged(function(v)
+                    lastKnownValue = normalizeDropdownValue(v, el.Multi)
+                end)
+            end)
+        end
+
         setmetatable(tracker, {
             __index = function(_, key)
+                if key == "Value" then
+                    if d and d.Value ~= nil then
+                        return normalizeDropdownValue(d.Value, el.Multi)
+                    end
+                    return normalizeDropdownValue(lastKnownValue, el.Multi)
+                end
                 return d and d[key]
             end
         })

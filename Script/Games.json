@@ -146,5 +146,13 @@
         "version": "1.0.0",
         "status": "1",
         "category": "Simulator"
+    },
+    "Command Your Clone Army!":{
+        "id": "130422190249372",
+        "name": "Command Your Clone Army!",
+        "path": "CommandYourCloneArmy.json",
+        "version": "1.0.0",
+        "status": "1",
+        "category": "Simulator"
     }
 }

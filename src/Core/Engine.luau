@@ -6,6 +6,13 @@ Engine.AssetFolder = Engine.ProjectFolder .. "/Assets/icon"
 
 local iconCache = {}
 local foldersCreated = false
+local DEBUG = (getgenv and getgenv().NEXS_DEBUG) == true
+
+local function debugLog(msg)
+    if DEBUG then
+        warn("[7yd7 Engine][Debug] " .. tostring(msg))
+    end
+end
 
 local function ensureFolders()
     if foldersCreated then return end
@@ -82,20 +89,121 @@ function Engine.RunAction(code, params, context)
     else task.spawn(function() pcall(scriptFunc, val, opt) end) end
 end
 
-local function addElementsToTab(tabObj, elementsArray, adapter, EngineRef)
+local function makeElementSyncKey(el)
+    local idPart = tostring(el.Id or el.Title or "")
+    return (el.Type or "Unknown") .. "::" .. idPart
+end
+
+local function registerSyncedControl(syncStore, key, control)
+    if not syncStore.controls[key] then
+        syncStore.controls[key] = {}
+    end
+    table.insert(syncStore.controls[key], control)
+
+    if syncStore.values[key] ~= nil and control and control.SetValue then
+        syncStore.busy[key] = true
+        pcall(function() control:SetValue(syncStore.values[key]) end)
+        syncStore.busy[key] = nil
+    end
+end
+
+local function broadcastControlValue(syncStore, key, sourceControl, value)
+    syncStore.values[key] = value
+    local controls = syncStore.controls[key]
+    if not controls then return end
+    for _, control in ipairs(controls) do
+        if control ~= sourceControl and control and control.SetValue then
+            pcall(function() control:SetValue(value) end)
+        end
+    end
+end
+
+local function makeControlCallback(el, scriptCode, context, EngineRef, syncStore, sourceControlRef)
+    local key = makeElementSyncKey(el)
+    return function(V)
+        if syncStore.busy[key] then return end
+        syncStore.busy[key] = true
+        broadcastControlValue(syncStore, key, sourceControlRef.value, V)
+        EngineRef.RunAction(scriptCode, {Value = V}, context)
+        syncStore.busy[key] = nil
+    end
+end
+
+local function addElementsToTab(tabObj, elementsArray, adapter, EngineRef, syncStore, context)
     if not elementsArray then return end
+    local elementBuilders = {
+        Logic = function(el, scriptCode)
+            EngineRef.RunAction(scriptCode, {Value = tabObj, Sync = true}, context)
+        end,
+        Paragraph = function(el)
+            tabObj:AddParagraph({ Title = el.Title or "", Content = el.Content or "" })
+        end,
+        Button = function(el, scriptCode)
+            tabObj:AddButton({
+                Id = el.Id,
+                Title = el.Title or "Button",
+                Description = el.Description or "",
+                Callback = function() EngineRef.RunAction(scriptCode, nil, context) end
+            })
+        end,
+        Section = function(el)
+            tabObj:AddSection({ Title = el.Title, Icon = EngineRef.GetIcon(el.Icon), SectionPosition = el.SectionPosition })
+        end
+    }
+
     for _, el in ipairs(elementsArray) do
         local scriptCode = el.Script
         if el.SectionTitle then tabObj:AddSection({ Title = el.SectionTitle, Icon = EngineRef.GetIcon(el.SectionIcon), SectionPosition = el.SectionPosition }) end
 
-        if el.Type == "Logic" then EngineRef.RunAction(scriptCode, {Value = tabObj, Sync = true}, adapter:GetContext())
-        elseif el.Type == "Paragraph" then tabObj:AddParagraph({ Title = el.Title or "", Content = el.Content or "" })
-        elseif el.Type == "Button" then tabObj:AddButton({ Id = el.Id, Title = el.Title or "Button", Description = el.Description or "", Callback = function() EngineRef.RunAction(scriptCode, nil, adapter:GetContext()) end })
-        elseif el.Type == "Toggle" then tabObj:AddToggle(el.Id or el.Title, { Title = el.Title or "Toggle", Default = el.Default or false, Callback = function(V) EngineRef.RunAction(scriptCode, {Value = V}, adapter:GetContext()) end })
-        elseif el.Type == "Slider" then tabObj:AddSlider(el.Id or el.Title, { Title = el.Title or "Slider", Default = el.Default or 0, Min = el.Min or 0, Max = el.Max or 100, Rounding = el.Rounding or 1, Callback = function(V) EngineRef.RunAction(scriptCode, {Value = V}, adapter:GetContext()) end })
-        elseif el.Type == "Input" then tabObj:AddInput(el.Id or el.Title, { Title = el.Title or "Input", Default = el.Default or "", Placeholder = el.Placeholder or "", Callback = function(V) EngineRef.RunAction(scriptCode, {Value = V}, adapter:GetContext()) end })
-        elseif el.Type == "Dropdown" then tabObj:AddDropdown(el.Id or el.Title, { Title = el.Title or "Dropdown", Values = el.Values or {}, Default = el.Default or 1, Multi = el.Multi or false, Callback = function(V) EngineRef.RunAction(scriptCode, {Value = V}, adapter:GetContext()) end })
-        elseif el.Type == "Section" then tabObj:AddSection({ Title = el.Title, Icon = EngineRef.GetIcon(el.Icon), SectionPosition = el.SectionPosition })
+        if elementBuilders[el.Type] then
+            elementBuilders[el.Type](el, scriptCode)
+        elseif el.Type == "Toggle" or el.Type == "Slider" or el.Type == "Input" or el.Type == "Dropdown" then
+            local key = makeElementSyncKey(el)
+            local optionId = el.Id or el.Title
+            local sourceControlRef = { value = nil }
+            local callback = makeControlCallback(el, scriptCode, context, EngineRef, syncStore, sourceControlRef)
+
+            local control
+            if el.Type == "Toggle" then
+                control = tabObj:AddToggle(optionId, {
+                    Title = el.Title or "Toggle",
+                    Default = el.Default or false,
+                    Callback = callback
+                })
+            elseif el.Type == "Slider" then
+                control = tabObj:AddSlider(optionId, {
+                    Title = el.Title or "Slider",
+                    Default = el.Default or 0,
+                    Min = el.Min or 0,
+                    Max = el.Max or 100,
+                    Rounding = el.Rounding or 1,
+                    Callback = callback
+                })
+            elseif el.Type == "Input" then
+                control = tabObj:AddInput(optionId, {
+                    Title = el.Title or "Input",
+                    Default = el.Default or "",
+                    Placeholder = el.Placeholder or "",
+                    Callback = callback
+                })
+            elseif el.Type == "Dropdown" then
+                control = tabObj:AddDropdown(optionId, {
+                    Title = el.Title or "Dropdown",
+                    Values = el.Values or {},
+                    Default = el.Default or 1,
+                    Multi = el.Multi or false,
+                    Callback = callback
+                })
+            end
+
+            if not control and optionId ~= nil and adapter and adapter.Options then
+                control = adapter.Options[tostring(optionId)] or adapter.Options[optionId]
+            end
+
+            if control then
+                sourceControlRef.value = control
+                registerSyncedControl(syncStore, key, control)
+            end
         end
     end
 end
@@ -207,6 +315,13 @@ local function fetchGameConfig(pathValue, subName)
 end
 
 function Engine.LoadAndBuild(adapter)
+    local t0 = tick()
+    local syncStore = {
+        controls = {},
+        values = {},
+        busy = {}
+    }
+
     local rawData, gamesDataRaw
     local fetchThreads = 2
     task.spawn(function()
@@ -220,11 +335,13 @@ function Engine.LoadAndBuild(adapter)
 
     local waitStart = tick()
     repeat task.wait() until fetchThreads == 0 or (tick() - waitStart) > 5
+    debugLog(string.format("Fetch Default/Games finished in %.3fs", tick() - waitStart))
 
     if not rawData then warn("[7yd7 Engine] Failed to load Default JSON") return end
 
     local decodeSuccess, data = pcall(function() return HttpService:JSONDecode(rawData) end)
     if not decodeSuccess then warn("[7yd7 Engine] JSON Parse Error in Default.json") return end
+    debugLog("Default.json parsed")
 
     local currentGameData = nil
     local currentGameName = nil
@@ -256,8 +373,10 @@ function Engine.LoadAndBuild(adapter)
     if currentGameData and currentGameData.Tabs then collectIcons(currentGameData.Tabs, iconSet) end
 
     local threads = 0
+    local iconCount = 0
     for name, _ in pairs(iconSet) do
         threads = threads + 1
+        iconCount = iconCount + 1
         task.spawn(function()
             Engine.GetIcon(name)
             threads = threads - 1
@@ -267,6 +386,7 @@ function Engine.LoadAndBuild(adapter)
     if threads > 0 then
         local start = tick()
         repeat task.wait() until threads == 0 or (tick() - start) > 4
+        debugLog(string.format("Icon warmup finished in %.3fs (%d icons)", tick() - start, iconCount))
     end
 
     local winData = data.Window or {}
@@ -285,8 +405,10 @@ function Engine.LoadAndBuild(adapter)
         Logo = Engine.GetIcon(winData.Logo),
         iconLogo = Engine.GetIcon(winData.iconLogo)
     })
+    local sharedContext = adapter:GetContext()
 
     for i, tabData in ipairs(data.Tabs or {}) do
+        local tabStart = tick()
         tabData.Icon = Engine.GetIcon(tabData.Icon)
         tabData._SectionCount = countSectionsInElements(tabData.Elements) + ((tabData.SectionTitle or tabData.SectionTitleFi) and 1 or 0)
         local Tab = Window:AddTab(tabData)
@@ -297,7 +419,8 @@ function Engine.LoadAndBuild(adapter)
                 end
             end
         end
-        addElementsToTab(Tab, tabData.Elements, adapter, Engine)
+        addElementsToTab(Tab, tabData.Elements, adapter, Engine, syncStore, sharedContext)
+        debugLog(string.format("Built tab '%s' in %.3fs", tostring(tabData.Title), tick() - tabStart))
     end
 
     if currentGameData and currentGameData.Tabs then
@@ -311,18 +434,19 @@ function Engine.LoadAndBuild(adapter)
             _SectionCount = dashboardSectionCount
         })
         for _, category in ipairs(currentGameData.Tabs) do
-            addElementsToTab(Dashboard, category.Elements, adapter, Engine)
+            addElementsToTab(Dashboard, category.Elements, adapter, Engine, syncStore, sharedContext)
 
             local DedicatedTab = Window:AddTab({
                 Title = category.Title or "Category",
                 Icon = Engine.GetIcon(category.Icon),
                 _SectionCount = countSectionsInElements(category.Elements)
             })
-            addElementsToTab(DedicatedTab, category.Elements, adapter, Engine)
+            addElementsToTab(DedicatedTab, category.Elements, adapter, Engine, syncStore, sharedContext)
         end
     end
     
     if adapter.OnFinished then adapter:OnFinished() end
+    debugLog(string.format("LoadAndBuild completed in %.3fs", tick() - t0))
 end
 
 return Engine
