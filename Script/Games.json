@@ -154,5 +154,13 @@
         "version": "1.0.0",
         "status": "1",
         "category": "Simulator"
+    },
+    "Escape Zombies Rail: SHOOTER":{
+        "id": "114361615440191",
+        "name": "Escape Zombies Rail: SHOOTER",
+        "path": "EscapeZombiesRailSHOOTER.json",
+        "version": "1.0.0",
+        "status": "1",
+        "category": "More"
     }
 }

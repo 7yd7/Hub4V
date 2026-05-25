@@ -1,0 +1,25 @@
+{
+    "Tabs": [
+        {
+            "Title": "Auto Matic",
+            "Elements": [
+                {
+                    "Type": "Section",
+                    "Title": "Enemy"
+                },
+                {
+                    "Type": "Logic",
+                    "Script": "getgenv().AutoKillEnemy = false; getgenv().HitMultiplier = {}; Value:AddToggle('AutoKillEnemy', {Title = 'Auto kill Enemy', Default = false, Callback = function(V) getgenv().AutoKillEnemy = V; if V then task.spawn(function() table.clear(getgenv().HitMultiplier); while getgenv().AutoKillEnemy do local lp = game.Players.LocalPlayer; local char = lp and lp.Character; local weaponFolder = char and char:FindFirstChild('Weapon'); local revent = weaponFolder and weaponFolder:FindFirstChild('revent'); local enemyFolder = workspace:FindFirstChild('Enemy'); if enemyFolder and revent then local enemies = enemyFolder:GetChildren(); for _, enemy in ipairs(enemies) do if not getgenv().AutoKillEnemy then break end; local hpNode = enemy:FindFirstChild('hp'); if hpNode and hpNode.Value >= 1 then local count = getgenv().HitMultiplier[enemy] or 1; getgenv().HitMultiplier[enemy] = count + 1; local ohString1 = 'fire'; local ohInstance2 = enemy; for i = 1, count do pcall(function() revent:FireServer(ohString1, ohInstance2) end) end end end; for enemy in pairs(getgenv().HitMultiplier) do if not enemy or not enemy.Parent then getgenv().HitMultiplier[enemy] = nil end end end; task.wait(0.1) end end) end end})"
+                },
+                {
+                    "Type": "Section",
+                    "Title": "Upgrade"
+                },
+                {
+                    "Type": "Logic",
+                    "Script": "getgenv().SelectedUpgrade = 'All'; getgenv().AutoBuyUpgrade = false; local function parsePrice(txt) txt = string.lower(tostring(txt)); txt = string.gsub(txt, ',', ''); local numStr, suffix = string.match(txt, '([%d%.]+)%s*([kmbt]?)'); local num = tonumber(numStr) or 0; if suffix == 'k' then num = num * 1000; elseif suffix == 'm' then num = num * 1000000; elseif suffix == 'b' then num = num * 1000000000; elseif suffix == 't' then num = num * 1000000000000; end; return num; end; local upgVals = {'All'}; local upgNodes = {}; pcall(function() local lp = game:GetService('Players').LocalPlayer; local bar = lp.PlayerGui:WaitForChild('GameGui', 3):WaitForChild('UpgradeBar', 3); if bar then for _, child in ipairs(bar:GetChildren()) do local shortName = string.match(child.Name, '^B%d+(.+)'); if shortName then table.insert(upgVals, shortName); upgNodes[shortName] = child; end; end; end; end); Value:AddDropdown('SelectUpgrade', {Title = 'Select Upgrade', Values = upgVals, Default = 'All', Multi = false, Callback = function(V) getgenv().SelectedUpgrade = V; end}); Value:AddToggle('AutoBuyUpgrade', {Title = 'Buy Upgrade', Default = false, Callback = function(V) getgenv().AutoBuyUpgrade = V; if V then task.spawn(function() while getgenv().AutoBuyUpgrade do pcall(function() local lp = game:GetService('Players').LocalPlayer; local cashObj = lp:FindFirstChild('cash'); local cashVal = cashObj and tonumber(cashObj.Value) or 0; local function tryBuy(sName, node) if not node then return end; local btn = node:FindFirstChild('UpgradeBtn'); local priceNode = btn and btn:FindFirstChild('Price'); if priceNode then local pText = priceNode.Text; local price = parsePrice(pText); if cashVal >= price and price > 0 then game:GetService('ReplicatedStorage').RS.RGX.RIO:FireServer('upgrade', sName); cashVal = cashVal - price; end; end; end; if getgenv().SelectedUpgrade == 'All' then for sName, node in pairs(upgNodes) do if not getgenv().AutoBuyUpgrade then break; end; tryBuy(sName, node); end; else local sName = getgenv().SelectedUpgrade; tryBuy(sName, upgNodes[sName]); end; end); task.wait(0.25); end; end); end; end});"
+                }
+            ]
+        }
+    ]
+}
