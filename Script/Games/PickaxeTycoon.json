@@ -51,6 +51,27 @@
                     "Script": "getgenv().AutoMerge = false; Value:AddToggle('AutoMerge', {Title = 'Auto Merge', Default = false, Callback = function(V) getgenv().AutoMerge = V; if V then task.spawn(function() local lp = game.Players.LocalPlayer; local function getMyPlot() local plots = workspace:FindFirstChild('Plots'); if not plots then return nil end; for _, plot in ipairs(plots:GetChildren()) do local ownerId = plot:GetAttribute('OwnerUserId') or plot:GetAttribute('OwnerUserid') or plot:GetAttribute('Owner'); if ownerId and (tonumber(ownerId) == lp.UserId or tostring(ownerId) == tostring(lp.UserId) or tostring(ownerId) == lp.Name) then return plot end end; return nil end; while getgenv().AutoMerge do local myPlot = getMyPlot(); local char = lp.Character; local root = char and char:FindFirstChild('HumanoidRootPart'); if myPlot and root then local buttons = myPlot:FindFirstChild('Buttons'); local targetBtn = buttons and buttons:FindFirstChild('ButtonMerge'); local button = targetBtn and targetBtn:FindFirstChild('Button'); if button and button:FindFirstChild('TouchInterest') then firetouchinterest(root, button, 0); task.wait(); firetouchinterest(root, button, 1) end end; task.wait(0.1) end end) end end})"
                 }
             ]
+        },
+        {
+            "Title": "Chest",
+            "Elements": [
+                {
+                    "Type": "Section",
+                    "Title": "Chests"
+                },
+                {
+                    "Type": "Logic",
+                    "Script": "getgenv().AutoCollectChest = false; Value:AddToggle('AutoCollectChest', {Title = 'Auto Collect Chest', Default = false, Callback = function(V) getgenv().AutoCollectChest = V; if V then task.spawn(function() local lp = game.Players.LocalPlayer; local function getTargetChest() for _, obj in ipairs(workspace:GetChildren()) do if obj.Name:sub(1, 5) == 'Chest' and obj:FindFirstChild('Hitbox') then return obj end end return nil end; while getgenv().AutoCollectChest do local chestGui = lp.PlayerGui:FindFirstChild('ChestGui'); local chestInfo = chestGui and chestGui:FindFirstChild('ChestInfo'); local isVisible = chestInfo and chestInfo.Visible; if not isVisible then local chest = getTargetChest(); if chest then local hitbox = chest:FindFirstChild('Hitbox'); local char = lp.Character; local root = char and char:FindFirstChild('HumanoidRootPart'); if hitbox and root then local oldCFrame = hitbox.CFrame; hitbox.CFrame = root.CFrame; task.wait(1) end end end; task.wait(0.1) end end) end end})"
+                },
+                {
+                    "Type": "Logic",
+                    "Script": "getgenv().AutoUnlockChest = false; Value:AddToggle('AutoUnlockChest', {Title = 'Auto Unlock Chest', Default = false, Callback = function(V) getgenv().AutoUnlockChest = V; if V then task.spawn(function() local lp = game.Players.LocalPlayer; local function parseNumber(str) if not str then return 0 end; str = str:gsub('[%$,%s]', ''):upper(); local mult = 1; if str:sub(-1) == 'K' then mult = 1000; str = str:sub(1, -2) elseif str:sub(-1) == 'M' then mult = 1000000; str = str:sub(1, -2) elseif str:sub(-1) == 'B' then mult = 1000000000; str = str:sub(1, -2) elseif str:sub(-1) == 'T' then mult = 1000000000000; str = str:sub(1, -2) end; return (tonumber(str) or 0) * mult end; while getgenv().AutoUnlockChest do local chestGui = lp.PlayerGui:FindFirstChild('ChestGui'); local chestInfo = chestGui and chestGui:FindFirstChild('ChestInfo'); if chestInfo and chestInfo.Visible then local priceFrame = chestInfo:FindFirstChild('UnlockMenu') and chestInfo.UnlockMenu:FindFirstChild('PriceFrame'); local itemPrice = priceFrame and priceFrame:FindFirstChild('ItemPrice'); local currencyGui = lp.PlayerGui:FindFirstChild('CurrencyGui'); local cashText = currencyGui and currencyGui:FindFirstChild('Frame') and currencyGui.Frame:FindFirstChild('CashText'); if itemPrice and cashText then local cost = parseNumber(itemPrice.Text); local myCash = parseNumber(cashText.Text); if myCash >= cost then game:GetService('ReplicatedStorage').RemoteEvents.UnlockChest:FireServer() end end end; task.wait(0.1) end end) end end})"
+                },
+                {
+                    "Type": "Logic",
+                    "Script": "getgenv().AutoDiscardChest = false; Value:AddToggle('AutoDiscardChest', {Title = 'Auto Discard Chest', Default = false, Callback = function(V) getgenv().AutoDiscardChest = V; if V then task.spawn(function() local lp = game.Players.LocalPlayer; while getgenv().AutoDiscardChest do local chestGui = lp.PlayerGui:FindFirstChild('ChestGui'); local chestInfo = chestGui and chestGui:FindFirstChild('ChestInfo'); if chestInfo and chestInfo.Visible then game:GetService('ReplicatedStorage').RemoteEvents.DiscardChest:FireServer() end; task.wait(0.1) end end) end end})"
+                }
+            ]
         }
     ]
 }
