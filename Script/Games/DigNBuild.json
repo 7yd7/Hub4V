@@ -1,0 +1,64 @@
+{
+    "Tabs": [
+        {
+            "Title": "Auto Farm",
+            "SectionTitle": "Dig N Build",
+            "Elements": [
+                {
+                    "Type": "Section",
+                    "Title": "Block Breaker"
+                },
+                {
+                    "Type": "Logic",
+                    "Script": "getgenv().DigNBuild = getgenv().DigNBuild or {}; local state = getgenv().DigNBuild; state.Remote = state.Remote or game:GetService('ReplicatedStorage').Packages._Index['sleitnick_knit@1.5.1'].knit.Services.FightService.RE.HitBlock; state.BreakMode = state.BreakMode or 'One by One'; state.BreakSpeed = state.BreakSpeed or 1; local function collectBlocks() local blocks = {}; local areas = workspace:FindFirstChild('Areas'); if not areas then return blocks end; for _, area in ipairs(areas:GetChildren()) do local blocksFolder = area:FindFirstChild('Blocks'); if blocksFolder then for _, block in ipairs(blocksFolder:GetChildren()) do local lastNum = tonumber(block.Name:match('_(%d+)$')); if lastNum then table.insert(blocks, {Name = block.Name, Order = lastNum}); end; end; end; end; table.sort(blocks, function(a, b) return a.Order < b.Order end); return blocks; end; Value:AddDropdown('BreakMode', {Title = 'Break Mode', Values = {'All', 'One by One'}, Multi = false, Default = 'One by One', Callback = function(v) state.BreakMode = type(v) == 'table' and v[1] or v; end}); Value:AddSlider('BreakSpeed', {Title = 'Times (1-100)', Min = 1, Max = 100, Default = 1, Rounding = 0, Callback = function(v) state.BreakSpeed = v; end}); Value:AddToggle('LoopToggle', {Title = 'Auto Break', Default = false, Callback = function(v) state.Active = v; if v then task.spawn(function() while state.Active do local blocks = collectBlocks(); if #blocks > 0 then if state.BreakMode == 'One by One' then for _, b in ipairs(blocks) do if not state.Active then break end; for i = 1, state.BreakSpeed do pcall(function() state.Remote:FireServer(b.Name, 0) end); end; end; else for _, b in ipairs(blocks) do for i = 1, state.BreakSpeed do pcall(function() state.Remote:FireServer(b.Name, 0) end); end; end; end; end; task.wait(0.025); end; end); end; end});"
+                },
+                {
+                    "Type": "Section",
+                    "Title": "Trophy"
+                },
+                {
+                    "Type": "Logic",
+                    "Script": "getgenv().DigNBuildCS = getgenv().DigNBuildCS or {}; local state = getgenv().DigNBuildCS; state.CompleteRemote = state.CompleteRemote or game:GetService('ReplicatedStorage').Packages._Index['sleitnick_knit@1.5.1'].knit.Services.FightService.RE.CompleteBuildRequest; state.SellRemote = state.SellRemote or game:GetService('ReplicatedStorage').Packages._Index['sleitnick_knit@1.5.1'].knit.Services.FightService.RE.SellBuildRequest; Value:AddToggle('AutoCompleteSell', {Title = 'Auto get Trophy', Default = false, Callback = function(v) state.Active = v; if v then task.spawn(function() while state.Active do pcall(function() state.CompleteRemote:FireServer() end); pcall(function() state.SellRemote:FireServer() end); task.wait(0.1) end end) end end})"
+                }
+            ]
+        },
+        {
+            "Title": "Buy",
+            "Elements": [
+                {
+                    "Type": "Section",
+                    "Title": "Pickaxe & Jetpack"
+                },
+                {
+                    "Type": "Logic",
+                    "Script": "getgenv().DigNBuildBuy = getgenv().DigNBuildBuy or {}; local state = getgenv().DigNBuildBuy; state.Remote = state.Remote or game:GetService('ReplicatedStorage').Packages._Index['sleitnick_knit@1.5.1'].knit.Services.PickaxeService.RE.BuyPickaxeEvent; local function parsePrice(text) if not text then return nil end; local cleaned = text:gsub('[%$,]', ''); local num, suffix = cleaned:lower():match('^([%d.]+)([kmbt]?)$'); if not num then return nil end; local n = tonumber(num); if not n then return nil end; if suffix == 'k' then n = n * 1000 elseif suffix == 'm' then n = n * 10^6 elseif suffix == 'b' then n = n * 10^9 elseif suffix == 't' then n = n * 10^12 end; return n; end; local function getTarget() local container = game.Players.LocalPlayer.PlayerGui.PickaxeGui.Frame.ContainerFrame; local picks = {}; for _, child in ipairs(container:GetChildren()) do local numStr = child.Name:match('^Pickaxe_(1%d*)$'); if numStr then local num = tonumber(numStr); local btn = child:FindFirstChild('Button'); local label = btn and btn:FindFirstChild('UnlockCountLabel'); if label and label.Visible then local price = parsePrice(label.Text); if price then table.insert(picks, {Name = child.Name, Number = num, Price = price}); end; end; end; end; table.sort(picks, function(a, b) return a.Number < b.Number end); return picks[1]; end; local function getCash() local ls = game.Players.LocalPlayer:FindFirstChild('leaderstats'); if not ls then return 0 end; local cash = ls:FindFirstChild('\\240\\159\\146\\181Cash'); return cash and cash.Value or 0; end; Value:AddToggle('AutoBuyToggle', {Title = 'Auto Buy Pickaxe', Default = false, Callback = function(v) state.Active = v; if v then task.spawn(function() while state.Active do local target = getTarget(); if target then local cash = getCash(); if cash >= target.Price then pcall(function() state.Remote:FireServer(target.Name) end); end; end; task.wait(0.5); end; end); end; end});"
+                },
+                {
+                    "Type": "Logic",
+                    "Script": "getgenv().DigNBuildBuyJet = getgenv().DigNBuildBuyJet or {}; local state = getgenv().DigNBuildBuyJet; state.Remote = state.Remote or game:GetService('ReplicatedStorage').Packages._Index['sleitnick_knit@1.5.1'].knit.Services.JetpackService.RE.BuyJetpackEvent; local function parsePrice(text) if not text then return nil end; local cleaned = text:gsub('[%$,]', ''); local num, suffix = cleaned:lower():match('^([%d.]+)([kmbt]?)$'); if not num then return nil end; local n = tonumber(num); if not n then return nil end; if suffix == 'k' then n = n * 1000 elseif suffix == 'm' then n = n * 10^6 elseif suffix == 'b' then n = n * 10^9 elseif suffix == 't' then n = n * 10^12 end; return n; end; local function getTarget() local container = game.Players.LocalPlayer.PlayerGui.JetpackGui.Frame.ContainerFrame; if not container then return nil end; local picks = {}; for _, child in ipairs(container:GetChildren()) do local numStr = child.Name:match('^Jetpack_(%d+)$'); if numStr then local num = tonumber(numStr); local btn = child:FindFirstChild('Button'); local label = btn and btn:FindFirstChild('UnlockCountLabel'); if label and label.Visible then local price = parsePrice(label.Text); if price then table.insert(picks, {Name = child.Name, Number = num, Price = price}); end; end; end; end; table.sort(picks, function(a, b) return a.Price < b.Price end); return picks[1]; end; local function getTrophy() local ls = game.Players.LocalPlayer:FindFirstChild('leaderstats'); if not ls then return 0 end; local trophy = ls:FindFirstChild('\\240\\159\\143\\134Trophy'); return trophy and trophy.Value or 0; end; Value:AddToggle('AutoBuyJetToggle', {Title = 'Auto Buy Jetpack', Default = false, Callback = function(v) state.Active = v; if v then task.spawn(function() while state.Active do local target = getTarget(); if target then local trophy = getTrophy(); print('[Jetpack] Trophy:', trophy, 'Target Price:', target.Price); if trophy >= target.Price then print('[Jetpack] Buying:', target.Name); pcall(function() state.Remote:FireServer(target.Name) end); end; end; task.wait(0.5); end; end); end; end});"
+                }
+            ]
+        },
+        {
+            "Title": "More",
+            "Elements": [
+                {
+                    "Type": "Section",
+                    "Title": "Online Rewards"
+                },
+                {
+                    "Type": "Logic",
+                    "Script": "getgenv().DigNBuildReward = getgenv().DigNBuildReward or {}; local state = getgenv().DigNBuildReward; local pack = game:GetService('ReplicatedStorage').Packages._Index['sleitnick_knit@1.5.1'].knit.Services.OnlineRewardService.RE; state.ResetRemote = state.ResetRemote or pack.ResetOnlineRewards; state.ClaimRemote = state.ClaimRemote or pack.ClaimOnlineReward; Value:AddToggle('AutoClaimReward', {Title = 'Claim All Online Reward', Default = false, Callback = function(v) state.Active = v; if v then task.spawn(function() while state.Active do pcall(function() state.ResetRemote:FireServer() end); for i = 1, 12 do pcall(function() state.ClaimRemote:FireServer(i) end) end; task.wait(0.1) end end) end end})"
+                },
+                {
+                    "Type": "Section",
+                    "Title": "Build Actions"
+                },
+                {
+                    "Type": "Logic",
+                    "Script": "getgenv().DigNBuildActions = getgenv().DigNBuildActions or {}; local state = getgenv().DigNBuildActions; state.CompleteRemote = state.CompleteRemote or game:GetService('ReplicatedStorage').Packages._Index['sleitnick_knit@1.5.1'].knit.Services.FightService.RE.CompleteBuildRequest; state.ResetRemote = state.ResetRemote or game:GetService('ReplicatedStorage').Packages._Index['sleitnick_knit@1.5.1'].knit.Services.FightService.RE.ResetBuildProgressRequest; Value:AddButton({Title = 'Complete Build', Callback = function() pcall(function() state.CompleteRemote:FireServer() end) end}); Value:AddButton({Title = 'Reset Build', Callback = function() pcall(function() state.ResetRemote:FireServer() end) end})"
+                }
+            ]
+        }
+    ]
+}

@@ -131,7 +131,7 @@
             }
         }
     },
-        "Push Rock for Brainrots!": {
+    "Push Rock for Brainrots!": {
         "id": "75888315541325",
         "name": "Push Rock for Brainrots!",
         "path": "PushRockForBrainrots.json",
@@ -147,7 +147,7 @@
         "status": "1",
         "category": "Simulator"
     },
-    "Command Your Clone Army!":{
+    "Command Your Clone Army!": {
         "id": "130422190249372",
         "name": "Command Your Clone Army!",
         "path": "CommandYourCloneArmy.json",
@@ -155,12 +155,20 @@
         "status": "1",
         "category": "Simulator"
     },
-    "Escape Zombies Rail: SHOOTER":{
+    "Escape Zombies Rail: SHOOTER": {
         "id": "114361615440191",
         "name": "Escape Zombies Rail: SHOOTER",
         "path": "EscapeZombiesRailSHOOTER.json",
         "version": "1.0.0",
         "status": "1",
         "category": "More"
+    },
+    "Dig N Build": {
+        "id": "110128366622296",
+        "name": "Dig N Build",
+        "path": "DigNBuild.json",
+        "version": "1.0.0",
+        "status": "1",
+        "category": "Simulator"
     }
 }
