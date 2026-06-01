@@ -244,25 +244,18 @@ function Adapter:GetContext()
         Fluent = Fluent,
         SaveManager = SaveManager,
         InterfaceManager = InterfaceManager,
-        Options = self.Options
+        Options = self.Options,
+        ConfigManager = self.ConfigManager
     }
 end
 
 function Adapter:OnFinished()
-    SaveManager:SetLibrary(Fluent)
     InterfaceManager:SetLibrary(Fluent)
-    SaveManager:IgnoreThemeSettings()
-    SaveManager:SetIgnoreIndexes({})
     InterfaceManager:SetFolder("7yd7Hub")
-    SaveManager:SetFolder("7yd7Hub/configs")
-
     if self.RawTabs and self.RawTabs.Settings then
         InterfaceManager:BuildInterfaceSection(self.RawTabs.Settings)
-        SaveManager:BuildConfigSection(self.RawTabs.Settings)
     end
-
     self.Window:SelectTab(1)
-    SaveManager:LoadAutoloadConfig()
 end
 
 Engine.LoadAndBuild(Adapter)

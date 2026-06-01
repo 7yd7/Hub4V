@@ -10,6 +10,7 @@ function Adapter:Track(id, element, initialValue)
     if not id then return element end
     local tracker = {
         Value = initialValue,
+        Default = nil,
         Raw = element,
         SetValue = function(self, val)
             self.Value = val
@@ -19,6 +20,13 @@ function Adapter:Track(id, element, initialValue)
                 elseif element.Set and type(val) ~= "table" then
                     element.Set(val)
                 end
+            end
+        end,
+        SetValues = function(self, values)
+            if type(element) == "table" then
+                local newValues = values or {}
+                local ok = pcall(function() element:SetValues(newValues) end)
+                if not ok then pcall(function() element:Refresh(newValues) end) end
             end
         end
     }

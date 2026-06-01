@@ -75,10 +75,11 @@ function Adapter:AddTab(config)
 
     function Proxy:AddSection(...)
         local args = {...}
-        local title, textSize
+        local title, textSize, icon
         if type(args[1]) == "table" then
             title = args[1].Title or args[1][1]
             textSize = args[1].TextSize or 16
+            icon = getWindIcon(args[1].Icon)
         else
             title = args[1]
             textSize = 16
@@ -87,6 +88,7 @@ function Adapter:AddTab(config)
         local section = Tab:Section({
             Title = title,
             TextSize = textSize,
+            Icon = icon,
             Opened = openSingleSection,
         })
         activeContainer = section
@@ -94,11 +96,18 @@ function Adapter:AddTab(config)
     end
     
     function Proxy:AddParagraph(el)
-        return activeContainer:Paragraph({
+        local p = activeContainer:Paragraph({
             Title = el.Title,
             Desc = el.Content,
             Image = getWindIcon(el.Icon)
         })
+        return {
+            Raw = p,
+            SetDesc = function(_, text)
+                local ok = pcall(function() p:SetDesc(text) end)
+                if not ok then pcall(function() p:Set(text) end) end
+            end
+        }
     end
 
     function Proxy:AddButton(el)
@@ -116,6 +125,7 @@ function Adapter:AddTab(config)
             Callback = el.Callback
         })
         Adapter.Options[id] = {
+            Value = el.Default,
             SetValue = function(_, v) t:Set(v) end
         }
         return t
@@ -134,6 +144,7 @@ function Adapter:AddTab(config)
             Callback = el.Callback
         })
         Adapter.Options[id] = {
+            Value = el.Default,
             SetValue = function(_, v) s:Set(v) end
         }
         return s

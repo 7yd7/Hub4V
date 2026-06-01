@@ -1,0 +1,59 @@
+{
+    "Tabs": [
+        {
+            "Title": "Auto Frame",
+            "Elements": [
+                {
+                    "Type": "Section",
+                    "Title": "Enemys"
+                },
+                {
+                    "Type": "Logic",
+                    "Script": "local lp = game.Players.LocalPlayer; local enemiesFolder = workspace:FindFirstChild('Enemies'); local zoneText = Value:AddParagraph({Title = 'Last ZoneNumber', Content = 'None'}); Value:AddToggle('AutoCollectWE', {Title = 'Auto Kill All Enemy', Default = false, Callback = function(V) getgenv().AutoCollectWE = V; if V then task.spawn(function() while getgenv().AutoCollectWE do if enemiesFolder then local lastZone = nil; for _, enemy in ipairs(enemiesFolder:GetChildren()) do task.spawn(function() pcall(function() local zn = enemy:GetAttribute('ZoneNumber'); if zn ~= nil then lastZone = zn end; local hum = enemy:FindFirstChildOfClass('Humanoid'); if hum then hum.Health = 0 end end) end) end; if lastZone then getgenv().LastZoneNumberWE = lastZone; zoneText:SetDesc(tostring(lastZone)) end end; task.wait(0.1) end end) end end})"
+                },
+                {
+                    "Type": "Section",
+                    "Title": "Wins"
+                },
+                {
+                    "Type": "Logic",
+                    "Script": "local lp = game.Players.LocalPlayer; local winsStage = workspace:FindFirstChild('WinsStage'); local zones = {}; if winsStage then for _, child in ipairs(winsStage:GetChildren()) do table.insert(zones, child.Name) end end; getgenv().SelectedWinZone = zones[1] or ''; Value:AddDropdown('WinZone', {Title = 'Get Win Zone', Values = zones, Default = getgenv().SelectedWinZone, Callback = function(V) getgenv().SelectedWinZone = V end}); Value:AddToggle('GetWinsLoop', {Title = 'Get Wins', Default = false, Callback = function(V) getgenv().GetWinsLoop = V; if V then task.spawn(function() while getgenv().GetWinsLoop do pcall(function() local selected = getgenv().SelectedWinZone; if selected and selected ~= '' and winsStage then local zoneObj = winsStage:FindFirstChild(selected); if zoneObj then local touchTarget = zoneObj:FindFirstChild('Wins') and zoneObj.Wins:FindFirstChild('T'); if touchTarget and lp.Character and lp.Character:FindFirstChild('HumanoidRootPart') then local hitPart = lp.Character.HumanoidRootPart; firetouchinterest(hitPart, touchTarget, 0); task.wait(0.1); firetouchinterest(hitPart, touchTarget, 1) end end end end); task.wait(0.1) end end) end end})"
+                },
+                {
+                    "Type": "Section",
+                    "Title": "Rebirth & Damage"
+                },
+                {
+                    "Type": "Logic",
+                    "Script": "Value:AddToggle('AutoRebirth', {Title = 'Auto Rebirth', Default = false, Callback = function(V) getgenv().AutoRebirth = V; if V then task.spawn(function() while getgenv().AutoRebirth do pcall(function() game:GetService('ReplicatedStorage').Events.Rebirth:FireServer() end); task.wait(0.3) end end) end end}); do local init = true; Value:AddToggle('AutoDamage', {Title = 'Auto Damage', Default = false, Callback = function(V) if init then init = false; return end; local lp = game:GetService('Players').LocalPlayer; local btn = lp and lp:FindFirstChild('PlayerGui') and lp.PlayerGui:FindFirstChild('GameUI') and lp.PlayerGui.GameUI:FindFirstChild('damageFrame') and lp.PlayerGui.GameUI.damageFrame:FindFirstChild('AutoClick'); if V then local orig = lp:GetAttribute('HasAutoClicker'); getgenv().AutoDamageOrig = orig; if not orig then lp:SetAttribute('HasAutoClicker', true) end; if btn then firesignal(btn.MouseButton1Click) end else if btn then firesignal(btn.MouseButton1Click) end; if getgenv().AutoDamageOrig == false then lp:SetAttribute('HasAutoClicker', false) end; getgenv().AutoDamageOrig = nil end end}) end"
+                }
+            ]
+        },
+        {
+            "Title": "Eggs",
+            "Elements": [
+                {
+                    "Type": "Section",
+                    "Title": "Egg Hatching"
+                },
+                {
+                    "Type": "Logic",
+                    "Script": "local eggInfo = workspace:FindFirstChild('EggInfo'); local eggNames = {}; if eggInfo then for _, child in ipairs(eggInfo:GetChildren()) do if child.Name ~= 'Wins' then table.insert(eggNames, child.Name) end end end; table.sort(eggNames, function(a, b) return (tonumber(a) or 0) < (tonumber(b) or 0) end); getgenv().SelectedEgg = eggNames[1] or ''; local winsPara = Value:AddParagraph({Title = 'Egg Wins Info', Content = 'Select an egg'}); Value:AddDropdown('EggSelect', {Title = 'Select Egg', Values = eggNames, Default = getgenv().SelectedEgg, Callback = function(V) getgenv().SelectedEgg = V; local childObj = eggInfo and eggInfo:FindFirstChild(V); if childObj then local winsObj = childObj:FindFirstChild('EggInfo') and childObj.EggInfo:FindFirstChild('Wins'); local txt = winsObj and winsObj.Text or 'N/A'; winsPara:SetDesc(txt) end end}); Value:AddToggle('AutoBuyEgg', {Title = 'Auto Buy Egg', Default = false, Callback = function(V) getgenv().AutoBuyEgg = V; if V then task.spawn(function() while getgenv().AutoBuyEgg do pcall(function() local num = getgenv().SelectedEgg; if num and num ~= '' then game:GetService('ReplicatedStorage').Events.EggHatch:InvokeServer(num, tonumber(num)) end end); task.wait(0.1) end end) end end})"
+                }
+            ]
+        },
+        {
+            "Title": "Weapons",
+            "Elements": [
+                {
+                    "Type": "Section",
+                    "Title": "Weapon Shop"
+                },
+                {
+                    "Type": "Logic",
+                    "Script": "local function parseNum(str) if not str then return 0 end; local numPart, suffix = str:lower():match('([%d%.]+)%s*([kmbtqa]+)'); if not numPart then numPart = str:match('[%d%.]+'); suffix = '' end; local n = tonumber(numPart); if not n then return 0 end; if suffix == 'k' then n = n * 1000 elseif suffix == 'm' then n = n * 1000000 elseif suffix == 'b' then n = n * 1000000000 elseif suffix == 't' then n = n * 1000000000000 elseif suffix == 'qa' then n = n * 1000000000000000 elseif suffix == 'qi' then n = n * 1000000000000000000 end; return n end; local function formatDisplay(raw) local n = parseNum(raw); if n >= 1000000000000000000 then return tostring(math.floor(n/1000000000000000000)) .. 'Qi' elseif n >= 1000000000000000 then return tostring(math.floor(n/1000000000000000)) .. 'Qa' elseif n >= 1000000000 then return tostring(math.floor(n/1000000000)) .. 'B' elseif n >= 1000000 then return tostring(math.floor(n/1000000)) .. 'M' elseif n >= 1000 then return tostring(math.floor(n/1000)) .. 'K' else return tostring(math.floor(n)) end end; local weaponLayout = workspace:FindFirstChild('WeaponsLayout'); local weapons = {}; if weaponLayout then for _, child in ipairs(weaponLayout:GetChildren()) do local winsObj = child:FindFirstChild('Pad') and child.Pad:FindFirstChild('WeaponsBillboard') and child.Pad.WeaponsBillboard:FindFirstChild('Wins'); local rawText = winsObj and winsObj.Text or '?'; local num = parseNum(rawText); table.insert(weapons, {Name = child.Name, Num = num, Display = child.Name .. ' - ' .. formatDisplay(rawText) .. ' wins'}) end end; table.sort(weapons, function(a, b) return a.Num < b.Num end); local weaponList = {}; for _, w in ipairs(weapons) do table.insert(weaponList, w.Display) end; getgenv().SelectedWeapon = weaponList[1] or ''; Value:AddDropdown('WeaponSelect', {Title = 'Select Weapon', Values = weaponList, Default = getgenv().SelectedWeapon, Callback = function(V) getgenv().SelectedWeapon = V end});     Value:AddButton({Title = 'Buy Weapon', Callback = function() local sel = getgenv().SelectedWeapon; if sel and sel ~= '' then local name = sel:gsub('%s*%-.*$', ''); game:GetService('ReplicatedStorage').Events.WeaponShi:InvokeServer('Buy', name) end end}); Value:AddToggle('AutoBuyWeapon', {Title = 'Auto Buy Weapon', Default = false, Callback = function(V) getgenv().AutoBuyWeapon = V; if V then task.spawn(function() while getgenv().AutoBuyWeapon do local sel = getgenv().SelectedWeapon; if sel and sel ~= '' then local name = sel:gsub('%s*%-.*$', ''); pcall(function() game:GetService('ReplicatedStorage').Events.WeaponShi:InvokeServer('Buy', name) end) end; task.wait(0.3) end end) end end})"
+                }
+            ]
+        }
+    ]
+}

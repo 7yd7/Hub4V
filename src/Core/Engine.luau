@@ -203,6 +203,15 @@ local function addElementsToTab(tabObj, elementsArray, adapter, EngineRef, syncS
             if control then
                 sourceControlRef.value = control
                 registerSyncedControl(syncStore, key, control)
+                local resolved = el.Default
+                if resolved == nil then
+                    if el.Type == "Toggle" then resolved = false
+                    elseif el.Type == "Slider" then resolved = 0
+                    elseif el.Type == "Input" then resolved = ""
+                    elseif el.Type == "Dropdown" then resolved = (el.Values or {})[1]
+                    end
+                end
+                if resolved ~= nil then control.Default = resolved end
             end
         end
     end
@@ -407,6 +416,121 @@ function Engine.LoadAndBuild(adapter)
     })
     local sharedContext = adapter:GetContext()
 
+    local settingsExists = false
+    for _, tabData in ipairs(data.Tabs or {}) do
+        if tabData.Title == "Settings" then settingsExists = true; break end
+    end
+    if not settingsExists then
+        table.insert(data.Tabs, { Title = "Settings", Icon = "I-config", Elements = {} })
+    end
+    for _, tabData in ipairs(data.Tabs or {}) do
+        if tabData.Title == "Settings" then
+            tabData.Elements = tabData.Elements or {}
+            table.insert(tabData.Elements, { Type = "Section", Title = "Config Manager", Icon = "I-config" })
+            table.insert(tabData.Elements, { Type = "Logic", Script = [[
+                local ok, CM = pcall(function()
+                    local src = Fetch("src/Core/configs.luau")
+                    return src and loadstring(src)()
+                end)
+                if not ok or not CM then return end
+                local cm = CM.new(Options)
+                cm:SetFolder("7yd7Hub/configs")
+                cm:IgnoreIndexes({ "_CMSaveAs", "_CMDropdown" })
+                Value:AddInput("_CMSaveAs", { Title = "Config Name", Placeholder = "Enter config name..." })
+                local saveInput = Options["_CMSaveAs"]
+                local selected
+                local function unique(name)
+                    if not cm:Exists(name) then return name end
+                    local n = 1
+                    while cm:Exists(name .. "_" .. n) do n = n + 1 end
+                    return name .. "_" .. n
+                end
+                local function onSave()
+                    local name = saveInput and saveInput.Value or ""
+                    if name ~= "" then
+                        name = unique(name)
+                        cm:Save(name)
+                        if saveInput and saveInput.SetValue then saveInput:SetValue(name) end
+                        if dd and dd.SetValues then
+                            local nl = cm:List()
+                            if #nl == 0 then nl = {"No configs"} end
+                            dd:SetValues(nl)
+                        end
+                        if dd then selected = name end
+                    end
+                end
+                Value:AddButton({ Title = "Save As", Callback = onSave })
+                local list = cm:List()
+                if #list == 0 then list = {"No configs"} end
+                selected = list[1]
+                Value:AddDropdown("_CMDropdown", { Title = "Config List", Values = list, Default = selected, Callback = function(v) selected = v end })
+                local dd = Options["_CMDropdown"]
+                local function refreshDD()
+                    local nl = cm:List()
+                    if #nl == 0 then nl = {"No configs"} end
+                    if dd and dd.SetValues then dd:SetValues(nl) end
+                end
+                Value:AddButton({ Title = "Load", Callback = function()
+                    if selected and selected ~= "No configs" then cm:Load(selected) end
+                end })
+                Value:AddButton({ Title = "Overwrite", Callback = function()
+                    if selected and selected ~= "No configs" then cm:Save(selected) end
+                end })
+                Value:AddButton({ Title = "Delete", Callback = function()
+                    if selected and selected ~= "No configs" then cm:Delete(selected); refreshDD(); selected = nil end
+                end })
+                local resetBusy = false
+                Value:AddButton({ Title = "Reset All", Callback = function()
+                    if resetBusy then return end
+                    resetBusy = true
+                    for id, opt in pairs(Options) do
+                        if opt and opt.Value ~= nil and tostring(id):sub(1, 3) ~= "_CM" then
+                            local def = opt.Default
+                            if def == nil then
+                                local t = type(opt.Value)
+                                if t == "boolean" then def = false
+                                elseif t == "number" then def = 0
+                                elseif t == "string" then def = ""
+                                end
+                            end
+                            if def ~= nil then
+                                if opt.SetValue then
+                                    opt._silent = true
+                                    pcall(function() opt:SetValue(def) end)
+                                    opt._silent = nil
+                                else
+                                    opt.Value = def
+                                end
+                            end
+                        end
+                    end
+                    resetBusy = false
+                end })
+                Value:AddSection({ Title = "Autoload Config", Icon = GetIcon("I-cloud") })
+                local autoloadPara = Value:AddParagraph({ Title = "", Content = "Current autoload config: " .. (cm:GetAutoloadConfig() or "none") })
+                local function updateAutoloadText()
+                    local a = cm:GetAutoloadConfig()
+                    if autoloadPara and autoloadPara.SetDesc then
+                        autoloadPara:SetDesc("Current autoload config: " .. (a or "none"))
+                    end
+                end
+                Value:AddButton({ Title = "Set as Autoload", Callback = function()
+                    if selected and selected ~= "No configs" then
+                        cm:SetAutoloadConfig(selected)
+                        updateAutoloadText()
+                    end
+                end })
+                Value:AddButton({ Title = "Reset Autoload", Callback = function()
+                    cm:ResetAutoloadConfig()
+                    updateAutoloadText()
+                end })
+                cm:LoadAutoloadConfig()
+                getgenv()._ConfigManager = cm
+            ]]})
+            break
+        end
+    end
+
     for i, tabData in ipairs(data.Tabs or {}) do
         local tabStart = tick()
         tabData.Icon = Engine.GetIcon(tabData.Icon)
@@ -444,7 +568,7 @@ function Engine.LoadAndBuild(adapter)
             addElementsToTab(DedicatedTab, category.Elements, adapter, Engine, syncStore, sharedContext)
         end
     end
-    
+
     if adapter.OnFinished then adapter:OnFinished() end
     debugLog(string.format("LoadAndBuild completed in %.3fs", tick() - t0))
 end

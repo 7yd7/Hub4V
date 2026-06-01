@@ -11,6 +11,9 @@ function Adapter:Track(id, element, initialValue)
     local tracker = {
         Value = initialValue,
         Raw = element,
+        SetValueSilent = function(self, val)
+            self.Value = val
+        end,
         SetValue = function(self, val)
             self.Value = val
 			if type(element) == "table" then
@@ -112,8 +115,10 @@ function Adapter:AddTab(config)
         local val = args.Default or false
         local tracker
         local function callback(v)
-            if tracker then tracker.Value = v end
-            if args.Callback then args.Callback(v) end
+            if tracker then
+                tracker.Value = v
+                if not tracker._silent and args.Callback then args.Callback(v) end
+            end
         end
         local el = Tab:Toggle(args.Title, args.Description or "", val, callback)
         tracker = Adapter:Track(id, el, val)
@@ -124,8 +129,10 @@ function Adapter:AddTab(config)
         local val = args.Default or 0
         local tracker
         local function callback(v)
-            if tracker then tracker.Value = v end
-            if args.Callback then args.Callback(v) end
+            if tracker then
+                tracker.Value = v
+                if not tracker._silent and args.Callback then args.Callback(v) end
+            end
         end
         local el = Tab:Slider(args.Title, args.Description or "", args.Min or 0, args.Max or 100, val, callback)
         tracker = Adapter:Track(id, el, val)
@@ -139,8 +146,10 @@ function Adapter:AddTab(config)
             if args.Numeric then
                 v = v:gsub("[^%d%.%-]", "")
             end
-            if tracker then tracker.Value = v end
-            if args.Callback then args.Callback(v) end
+            if tracker then
+                tracker.Value = v
+                if not tracker._silent and args.Callback then args.Callback(v) end
+            end
         end
         local el = Tab:Textbox(args.Title, args.Description or "", true, callback)
         tracker = Adapter:Track(id, el, val)
@@ -151,10 +160,13 @@ function Adapter:AddTab(config)
         local val = args.Default or ""
         local tracker
         local function callback(v)
-            if tracker then tracker.Value = v end
-            if args.Callback then args.Callback(v) end
+            if tracker then
+                tracker.Value = v
+                if not tracker._silent and args.Callback then args.Callback(v) end
+            end
         end
         local el = Tab:Dropdown(args.Title, args.Values or {}, callback)
+        el._Values = args.Values or {}
         tracker = Adapter:Track(id, el, val)
         return tracker
     end

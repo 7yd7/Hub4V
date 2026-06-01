@@ -1450,6 +1450,10 @@ function Flux:Window(text, bottom,mainclr,toclose)
 				)
 			Container.CanvasSize = UDim2.new(0, 0, 0, ContainerLayout.AbsoluteContentSize.Y)
 			
+			function SliderFunc:SetValue(value)
+				self:Change(value)
+			end
+			
 			function SliderFunc:Change(tochange)
 				CurrentValueFrame.Size = UDim2.new((tochange or 0) / max, 0, 0, 3)
 				SlideCircle.Position = UDim2.new((tochange or 0)/max, -6,-1.30499995, 0)
@@ -1931,6 +1935,10 @@ function Flux:Window(text, bottom,mainclr,toclose)
 				if not DropToggled then
 					Title.Text = newText
 				end
+			end
+			
+			function DropFunc:SetValue(value)
+				self:Select(value)
 			end
 			
 			function DropFunc:Select(item)

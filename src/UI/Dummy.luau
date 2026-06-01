@@ -18,6 +18,11 @@ function Adapter:Track(id, element)
                 element:SetCode(tostring(val))
             end
         end,
+        SetValues = function(_, values)
+            local newValues = values or {}
+            local ok = pcall(function() element:SetValues(newValues) end)
+            if not ok then pcall(function() element:Refresh(newValues) end) end
+        end,
         Raw = element
     }, {
         __index = function(_, k)

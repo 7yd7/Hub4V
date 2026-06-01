@@ -15,6 +15,10 @@ function Adapter:Track(id, element, defaultValue)
             self.Value = val
             if element.Set then element:Set(val)
             elseif element.SetText then element:SetText(tostring(val)) end
+        end,
+        SetValues = function(self, values)
+            if element.Refresh then element:Refresh(values or {})
+            elseif element.Set then element:Set(values or {}) end
         end
     }
     self.Options[tostring(id)] = tracker
@@ -61,7 +65,13 @@ function Adapter:AddTab(config)
         local t, c = tostring(args.Title or ""), tostring(args.Content or "")
         local s, r = pcall(function() return Tab:CreateParagraph({Title = t, Content = c}) end)
         if not s then s, r = pcall(function() return Tab:CreateParagraph(t, c) end) end
-        return r
+        return {
+            Raw = r,
+            SetDesc = function(_, text)
+                local ok = pcall(function() r:Set(t .. ": " .. text) end)
+                if not ok then pcall(function() r:SetText(t .. ": " .. text) end) end
+            end
+        }
     end
     
     function Proxy:AddButton(args) 

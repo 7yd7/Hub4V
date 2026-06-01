@@ -78,7 +78,12 @@ function Adapter:AddTab(config)
             Header = el.Title or "",
             Body = el.Content or ""
         })
-        return p
+        return {
+            Raw = p,
+            SetDesc = function(_, text)
+                pcall(function() p:UpdateBody(text) end)
+            end
+        }
     end
 
     function Proxy:AddButton(el)
@@ -102,6 +107,7 @@ function Adapter:AddTab(config)
             Callback = el.Callback
         })
         Adapter.Options[id] = {
+            Value = el.Default or false,
             SetValue = function(_, v)
                 if toggle.UpdateState then toggle:UpdateState(v) end
             end,
@@ -122,6 +128,7 @@ function Adapter:AddTab(config)
             Callback = el.Callback
         })
         Adapter.Options[id] = {
+            Value = el.Default or 0,
             SetValue = function(_, v)
                 if slider.UpdateValue then slider:UpdateValue(v) end
             end,

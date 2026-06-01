@@ -36,7 +36,7 @@ function Adapter:CreateWindow(config)
 end
 
 function Adapter:AddTab(config)
-    local tabIcon = config.Icon or "user"
+    local tabIcon = config.Icon
     if typeof(tabIcon) == "string" and tabIcon:find("rbxassetid://") then
         local tLower = string.lower(config.Title or "")
         if tLower:find("main") or tLower:find("home") then
@@ -91,9 +91,14 @@ function Adapter:AddTab(config)
     function Proxy:AddSection(args)
         local title
         local sectionPos
+        local icon
         if typeof(args) == "table" then
             title = args.Title or args[1] or ""
             sectionPos = resolveSectionPosition(args)
+            icon = args.Icon
+            if icon and icon ~= "" then
+                icon = Engine.GetIcon(icon)
+            end
         else
             title = tostring(args or "")
             sectionPos = resolveSectionPosition()
@@ -104,9 +109,9 @@ function Adapter:AddTab(config)
         end
 
         if sectionPos == "Left" then
-            activeGroupbox = Tab:AddLeftGroupbox(title)
+            activeGroupbox = Tab:AddLeftGroupbox(title, icon)
         else
-            activeGroupbox = Tab:AddRightGroupbox(title)
+            activeGroupbox = Tab:AddRightGroupbox(title, icon)
         end
         return Proxy
     end
@@ -350,7 +355,7 @@ function Adapter:OnFinished()
     if self.RawTabs and self.RawTabs.Settings then
         pcall(function()
             ThemeManager:ApplyToTab(self.RawTabs.Settings)
-            SaveManager:BuildConfigSection(self.RawTabs.Settings)
+            --SaveManager:BuildConfigSection(self.RawTabs.Settings)
         end)
     end
     
