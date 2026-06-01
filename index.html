@@ -1,7 +1,8 @@
 ﻿<!DOCTYPE html>
 <html lang="en" data-theme="dark">
+
 <head>
-    
+
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta property="og:image" content="https://github.com/7yd7/Hub4V/blob/Menu/Assets/icon/I-7yd7Logo.png?raw=true" />
@@ -17,7 +18,9 @@
     <link rel="icon" type="image/png" href="https://github.com/7yd7/Hub4V/blob/Menu/Assets/icon/I-7yd7.png?raw=true">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap"
+        rel="stylesheet">
     <style>
         *,
         *::before,
@@ -161,7 +164,7 @@
         .bg-mesh {
             position: absolute;
             inset: 0;
-            background-image: 
+            background-image:
                 linear-gradient(var(--line-soft) 1px, transparent 1px),
                 linear-gradient(90deg, var(--line-soft) 1px, transparent 1px);
             background-size: 40px 40px;
@@ -171,15 +174,31 @@
         }
 
         @keyframes floatGlow1 {
-            0% { transform: translate(0, 0) scale(1); }
-            50% { transform: translate(60px, 40px) scale(1.08); }
-            100% { transform: translate(-30px, 80px) scale(0.96); }
+            0% {
+                transform: translate(0, 0) scale(1);
+            }
+
+            50% {
+                transform: translate(60px, 40px) scale(1.08);
+            }
+
+            100% {
+                transform: translate(-30px, 80px) scale(0.96);
+            }
         }
 
         @keyframes floatGlow2 {
-            0% { transform: translate(0, 0) scale(1); }
-            50% { transform: translate(-50px, -40px) scale(0.92); }
-            100% { transform: translate(40px, 30px) scale(1.04); }
+            0% {
+                transform: translate(0, 0) scale(1);
+            }
+
+            50% {
+                transform: translate(-50px, -40px) scale(0.92);
+            }
+
+            100% {
+                transform: translate(40px, 30px) scale(1.04);
+            }
         }
 
         .app-header {
@@ -206,7 +225,8 @@
             pointer-events: none;
         }
 
-        .header-left, .header-right {
+        .header-left,
+        .header-right {
             display: flex;
             align-items: center;
             gap: 12px;
@@ -277,7 +297,9 @@
             transition: filter var(--transition);
         }
 
-        .theme-toggle, .discord-btn, .profile-btn {
+        .theme-toggle,
+        .discord-btn,
+        .profile-btn {
             width: 40px;
             height: 40px;
             border-radius: 50%;
@@ -292,17 +314,22 @@
             text-decoration: none;
         }
 
-        .discord-btn:hover, .theme-toggle:hover, .profile-btn:hover {
+        .discord-btn:hover,
+        .theme-toggle:hover,
+        .profile-btn:hover {
             background: var(--toggle-hover);
             transform: scale(1.05);
             color: var(--text-primary);
         }
 
-        .discord-btn:active, .theme-toggle:active, .profile-btn:active {
+        .discord-btn:active,
+        .theme-toggle:active,
+        .profile-btn:active {
             transform: scale(0.95);
         }
 
-        .discord-btn svg, .profile-btn svg {
+        .discord-btn svg,
+        .profile-btn svg {
             width: 20px;
             height: 20px;
         }
@@ -327,10 +354,25 @@
             position: absolute;
         }
 
-        [data-theme="dark"] .theme-toggle .icon-sun { opacity: 1; transform: rotate(0); }
-        [data-theme="dark"] .theme-toggle .icon-moon { opacity: 0; transform: rotate(-90deg); }
-        [data-theme="light"] .theme-toggle .icon-sun { opacity: 0; transform: rotate(90deg); }
-        [data-theme="light"] .theme-toggle .icon-moon { opacity: 1; transform: rotate(0); }
+        [data-theme="dark"] .theme-toggle .icon-sun {
+            opacity: 1;
+            transform: rotate(0);
+        }
+
+        [data-theme="dark"] .theme-toggle .icon-moon {
+            opacity: 0;
+            transform: rotate(-90deg);
+        }
+
+        [data-theme="light"] .theme-toggle .icon-sun {
+            opacity: 0;
+            transform: rotate(90deg);
+        }
+
+        [data-theme="light"] .theme-toggle .icon-moon {
+            opacity: 1;
+            transform: rotate(0);
+        }
 
         .main {
             width: min(1400px, calc(100vw - 48px));
@@ -592,8 +634,8 @@
             position: absolute;
             border-radius: 50%;
             object-fit: cover;
-            filter: sepia(0.3) hue-rotate(240deg) saturate(1.5) blur(1px); 
-            mix-blend-mode: screen; 
+            filter: sepia(0.3) hue-rotate(240deg) saturate(1.5) blur(1px);
+            mix-blend-mode: screen;
             animation: floatSpin var(--duration) ease-in-out infinite alternate;
             box-shadow: 0 0 25px rgba(167, 139, 250, 0.2), inset 0 0 10px rgba(167, 139, 250, 0.1);
         }
@@ -605,8 +647,13 @@
         }
 
         @keyframes floatSpin {
-            0% { transform: translate(0, 0) rotate(0deg) scale(0.8); }
-            100% { transform: translate(var(--tx), var(--ty)) rotate(var(--rot)) scale(1.3); }
+            0% {
+                transform: translate(0, 0) rotate(0deg) scale(0.8);
+            }
+
+            100% {
+                transform: translate(var(--tx), var(--ty)) rotate(var(--rot)) scale(1.3);
+            }
         }
 
         .nav-item.github-tab {
@@ -615,24 +662,28 @@
             border: 1px solid rgba(239, 68, 68, 0.3);
             transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
         }
+
         .nav-item.github-tab:hover {
             background: linear-gradient(135deg, rgba(239, 68, 68, 0.4), transparent);
             border-color: rgba(239, 68, 68, 0.7);
             transform: scale(1.08);
             box-shadow: 0 0 20px rgba(239, 68, 68, 0.25);
         }
+
         .nav-item.github-tab:active {
             transform: scale(0.95);
         }
+
         .nav-item.github-tab svg {
             color: #ef4444;
         }
-        
+
         [data-theme="light"] .nav-item.github-tab {
             color: #dc2626;
             background: linear-gradient(135deg, rgba(239, 68, 68, 0.08), transparent);
             border-color: rgba(239, 68, 68, 0.2);
         }
+
         [data-theme="light"] .nav-item.github-tab:hover {
             background: linear-gradient(135deg, rgba(239, 68, 68, 0.15), transparent);
             border-color: rgba(239, 68, 68, 0.4);
@@ -1128,24 +1179,31 @@
         <div class="bg-glow-2"></div>
         <div class="bg-mesh"></div>
     </div>
-    
+
     <div id="executorsBgContainer"></div>
 
     <header class="app-header">
         <div class="header-left">
-            <div class="logo"><img src="https://github.com/7yd7/Hub4V/blob/Menu/Assets/icon/I-7yd7.png?raw=true" alt="Hub4V" draggable="false"></div>
+            <div class="logo"><img src="https://github.com/7yd7/Hub4V/blob/Menu/Assets/icon/I-7yd7.png?raw=true"
+                    alt="Hub4V" draggable="false"></div>
         </div>
         <nav class="header-nav">
-            <a href="https://github.com/7yd7/Hub4V" target="_blank" rel="noopener noreferrer" class="nav-item github-tab">
-                <svg xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 24 24" width="18" height="18"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.285 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z"/></svg> GitHub
+            <a href="https://github.com/7yd7/Hub4V" target="_blank" rel="noopener noreferrer"
+                class="nav-item github-tab">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 24 24" width="18" height="18">
+                    <path
+                        d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.285 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z" />
+                </svg> GitHub
             </a>
         </nav>
         <div class="header-right">
-            <a class="discord-btn" href="https://discord.gg/kRfzv2kV7X" target="_blank" rel="noopener noreferrer" aria-label="Discord Server">
+            <a class="discord-btn" href="https://discord.gg/kRfzv2kV7X" target="_blank" rel="noopener noreferrer"
+                aria-label="Discord Server">
                 <img src="https://github.com/7yd7/Hub4V/blob/Menu/Assets/icon/i-discord.png?raw=true" alt="Discord">
             </a>
             <button class="theme-toggle" id="themeToggle" aria-label="Toggle theme">
-                <svg class="icon-sun" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                <svg class="icon-sun" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                    stroke="currentColor" stroke-width="2">
                     <circle cx="12" cy="12" r="5" />
                     <line x1="12" y1="1" x2="12" y2="3" />
                     <line x1="12" y1="21" x2="12" y2="23" />
@@ -1156,7 +1214,8 @@
                     <line x1="4.22" y1="19.78" x2="5.64" y2="18.36" />
                     <line x1="18.36" y1="5.64" x2="19.78" y2="4.22" />
                 </svg>
-                <svg class="icon-moon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                <svg class="icon-moon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                    stroke="currentColor" stroke-width="2">
                     <path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z" />
                 </svg>
             </button>
@@ -1166,7 +1225,8 @@
     <div class="main">
         <div class="global-search-container">
             <div class="global-search-wrap">
-                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                    stroke-width="2">
                     <circle cx="11" cy="11" r="8" />
                     <line x1="21" y1="21" x2="16.65" y2="16.65" />
                 </svg>
@@ -1270,13 +1330,13 @@
             copyField.addEventListener('click', async () => {
                 try { await navigator.clipboard.writeText(copyText.textContent); }
                 catch { const r = document.createRange(); r.selectNodeContents(copyText); const s = window.getSelection(); s.removeAllRanges(); s.addRange(r); document.execCommand('copy'); s.removeAllRanges(); }
-                
+
                 copyField.classList.add('copied');
-                
+
                 clearTimeout(copyTimeout);
                 copyTimeout = setTimeout(() => {
                     copyField.classList.remove('copied');
-                }, 1200); 
+                }, 1200);
             });
 
             const grid = document.getElementById('gamesGrid');
@@ -1643,38 +1703,38 @@
                     if (bgContainer) {
                         const res = await fetch('https://weao.xyz/api/status/exploits');
                         const data = await res.json();
-                        
+
                         const valid = data.filter(e => e.extype !== 'wexternal');
                         if (valid.length > 0) {
                             valid.forEach(e => {
                                 const title = e.title || e.name || 'Executor';
                                 const logoUrl = e.slug?.logo || `https://placehold.co/40x40/222222/FFFFFF/png?text=${title.charAt(0)}`;
-                                
+
                                 const el = document.createElement('img');
                                 el.className = 'floating-executor';
-                                el.src = logoUrl;
+                                el.src = "https://weao.xyz/_next/image?url=" + logoUrl + "&w=256&q=100";
                                 el.onerror = () => { el.style.display = 'none'; };
-                                
+
                                 const startX = Math.random() * 100;
                                 const startY = Math.random() * 100;
-                                const size = Math.random() * 50 + 30; 
+                                const size = Math.random() * 50 + 30;
                                 const tx = (Math.random() - 0.5) * 600 + 'px';
                                 const ty = (Math.random() - 0.5) * 600 + 'px';
                                 const rot = (Math.random() - 0.5) * 720 + 'deg';
-                                const duration = Math.random() * 20 + 25; 
+                                const duration = Math.random() * 20 + 25;
                                 const delay = Math.random() * -40;
-                                
+
                                 el.style.left = `${startX}vw`;
                                 el.style.top = `${startY}vh`;
                                 el.style.width = `${size}px`;
                                 el.style.height = `${size}px`;
-                                el.style.opacity = Math.random() * 0.4 + 0.1; 
+                                el.style.opacity = Math.random() * 0.4 + 0.1;
                                 el.style.setProperty('--tx', tx);
                                 el.style.setProperty('--ty', ty);
                                 el.style.setProperty('--rot', rot);
                                 el.style.setProperty('--duration', `${duration}s`);
                                 el.style.animationDelay = `${delay}s`;
-                                
+
                                 bgContainer.appendChild(el);
                             });
                         }
