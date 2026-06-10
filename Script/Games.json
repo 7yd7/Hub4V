@@ -174,11 +174,12 @@
     "Weapon Evolution": {
         "id": [
             "73108986061082",
-            "85226187927655"
+            "85226187927655",
+            "111610342553647"
         ],
         "name": "Weapon Evolution",
         "path": "WeaponEvolution.json",
-        "version": "1.0.0",
+        "version": "1.0.1",
         "status": "1",
         "category": "Simulator"
     }
