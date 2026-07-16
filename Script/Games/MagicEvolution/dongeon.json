@@ -1,0 +1,21 @@
+﻿{
+    "Tabs": [
+        {
+            "Title": "Auto Matic",
+            "Elements": [
+                {
+                    "Type": "Section",
+                    "Title": "Auto Farm"
+                },
+                {
+                    "Type": "Logic",
+                    "Script": "Value:AddToggle(\u0027MagicPower\u0027, {Title = \u0027Magic Power\u0027, Default = false, Callback = function(V) getgenv().MagicPower = V; if V then task.spawn(function() while getgenv().MagicPower do pcall(function() game:GetService(\u0027ReplicatedStorage\u0027).Remotes.GainMagicPower:FireServer() end); task.wait(0.1) end end) end end})"
+                },
+                {
+                    "Type": "Logic",
+                    "Script": "Value:AddToggle('KillMobs', {Title = 'Kill Mobs', Default = false, Callback = function(V) getgenv().KillMobs = V; if V then task.spawn(function() while getgenv().KillMobs do pcall(function() local dmg = game:GetService('Players').LocalPlayer:GetAttribute('MagicPower') or 1; local folder = workspace:FindFirstChild('DungeonMobs'); if folder then for _, child in ipairs(folder:GetChildren()) do game:GetService('ReplicatedStorage').Remotes.DealMobDamage:FireServer(child, dmg) end end end); task.wait(0.5) end end) end end})"
+                }
+            ]
+        }
+    ]
+}

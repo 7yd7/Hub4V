@@ -248,7 +248,7 @@ function Loader.Create(config)
         Loading.Position = UDim2.new(0.5, 0, 0.5, 0)
         Loading.Size = UDim2.fromOffset(130, 130)
         Loading.ImageTransparency = 1
-        Loading.Image = "rbxassetid://96248696249042"
+        Loading.Image = "rbxassetid://18898582662"
         
         task.spawn(function()
             local asset = resolveAsset("icon/I-7yd7.png")

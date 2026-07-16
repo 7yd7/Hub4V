@@ -1,0 +1,63 @@
+﻿{
+    "Tabs": [
+        {
+            "Title": "Auto Matic",
+            "Elements": [
+                {
+                    "Type": "Section",
+                    "Title": "Auto Farm"
+                },
+                {
+                    "Type": "Logic",
+                    "Script": "Value:AddToggle(\u0027MagicPower\u0027, {Title = \u0027Magic Power\u0027, Default = false, Callback = function(V) getgenv().MagicPower = V; if V then task.spawn(function() while getgenv().MagicPower do pcall(function() game:GetService(\u0027ReplicatedStorage\u0027).Remotes.GainMagicPower:FireServer() end); task.wait(0.1) end end) end end})"
+                },
+                {
+                    "Type": "Logic",
+                    "Script": "local folder = workspace:FindFirstChild(\u0027Stages\u0027); local displayList = {}; local stageMap = {}; if folder then for _, child in ipairs(folder:GetChildren()) do if child.Name ~= \u0027StageTemplate\u0027 then local wb = child:FindFirstChild(\u0027WinButton\u0027); local bw = wb and wb:GetAttribute(\u0027BaseWins\u0027) or \u0027BaseWins\u0027; local d = child.Name .. \u0027 - \u0027 .. bw; table.insert(displayList, d); stageMap[d] = child.Name end end end; getgenv().SelectedStage = stageMap[displayList[1]] or \u0027\u0027; getgenv().StageStates = {}; getgenv().StageSaves = {}; getgenv().PlayerOrigPos = nil; local function getWinCF(wb) local wp = wb:FindFirstChild(\u0027WorldPivot\u0027); if wp then local v = wp.Value; return typeof(v) == \u0027CFrame\u0027 and v or CFrame.new(v) end; local ok, wp2 = pcall(function() return wb.WorldPivot end); if ok and typeof(wp2) == \u0027CFrame\u0027 then return wp2 end; if wb:IsA(\u0027BasePart\u0027) then return wb.CFrame end; local s, r = pcall(wb.GetPrimaryPartCFrame, wb); if s then return r end; return CFrame.new(0, 0, 0) end; local function saveParts(wb) local t = {}; for _, p in ipairs(wb:GetDescendants()) do if p:IsA(\u0027BasePart\u0027) then table.insert(t, {p = p, CF = p.CFrame, CC = p.CanCollide, TR = p.Transparency, AN = p.Anchored, SZ = p.Size}) end end; return t end; local function restParts(t) for _, d in ipairs(t) do if d.p and d.p:IsA(\u0027BasePart\u0027) then d.p.CFrame = d.CF; d.p.CanCollide = d.CC; d.p.Transparency = d.TR; d.p.Anchored = d.AN; if d.SZ then d.p.Size = d.SZ end end end end; local function moveWB(wb, cf) for _, p in ipairs(wb:GetDescendants()) do if p:IsA(\u0027BasePart\u0027) then p.Anchored = true; p.CanCollide = false; p.Transparency = 1; p.CFrame = cf end end end; Value:AddDropdown(\u0027StageSelect\u0027, {Title = \u0027Select Stage\u0027, Values = displayList, Default = displayList[1] or \u0027\u0027, Callback = function(V) if getgenv().AutoWin and getgenv().SelectedStage and getgenv().SelectedStage ~= \u0027\u0027 then local sv = getgenv().StageSaves[getgenv().SelectedStage]; if sv then restParts(sv) end; getgenv().StageSaves[getgenv().SelectedStage] = nil; getgenv().StageStates[getgenv().SelectedStage] = nil end; getgenv().SelectedStage = stageMap[V] or \u0027\u0027 end}); Value:AddToggle(\u0027AutoWin\u0027, {Title = \u0027Auto Win\u0027, Default = false, Callback = function(V) getgenv().AutoWin = V; if V then task.spawn(function() local lp = game.Players.LocalPlayer; while getgenv().AutoWin do pcall(function() local sn = getgenv().SelectedStage; if not sn or sn == \u0027\u0027 then return end; local st = workspace.Stages:FindFirstChild(sn); if not st then return end; local wb = st:FindFirstChild(\u0027WinButton\u0027); if not wb then return end; local ch = lp.Character; local rt = ch and ch:FindFirstChild(\u0027HumanoidRootPart\u0027); if not rt then return end; getgenv().StageSaves[sn] = saveParts(wb); restParts(getgenv().StageSaves[sn]); local tp = wb:FindFirstChild(\u0027TouchPart\u0027); if tp then if getgenv().PlayerOrigPos then local r2 = ch and ch:FindFirstChild(\u0027HumanoidRootPart\u0027); if r2 then r2.CFrame = getgenv().PlayerOrigPos end; getgenv().PlayerOrigPos = nil end; if not getgenv().StageStates[sn] then getgenv().StageStates[sn] = true end; moveWB(wb, rt.CFrame * CFrame.new(0, 3, 0)); task.wait(); restParts(getgenv().StageSaves[sn]); task.wait() else if not getgenv().StageStates[sn] then getgenv().PlayerOrigPos = rt.CFrame; getgenv().StageStates[sn] = true end; rt.CFrame = getWinCF(wb); task.wait(0.1) end end); task.wait(0.1) end end) else if getgenv().PlayerOrigPos then local lp = game.Players.LocalPlayer; local ch = lp and lp.Character; local rt = ch and ch:FindFirstChild(\u0027HumanoidRootPart\u0027); if rt then rt.CFrame = getgenv().PlayerOrigPos end; getgenv().PlayerOrigPos = nil end; for sn, _ in pairs(getgenv().StageStates) do if getgenv().StageSaves[sn] then restParts(getgenv().StageSaves[sn]) end end; getgenv().StageStates = {}; getgenv().StageSaves = {} end end})"
+                },
+                {
+                    "Type": "Section",
+                    "Title": "More"
+                },
+                {
+                    "Type": "Logic",
+                    "Script": "Value:AddToggle(\u0027AutoRebirth\u0027, {Title = \u0027Auto Rebirth\u0027, Default = false, Callback = function(V) getgenv().AutoRebirth = V; if V then task.spawn(function() while getgenv().AutoRebirth do pcall(function() game:GetService(\u0027ReplicatedStorage\u0027).Remotes.Rebirth:FireServer() end); task.wait(1) end end) end end})"
+                },
+                {
+                    "Type": "Logic",
+                    "Script": "Value:AddToggle(\u0027KillMobs\u0027, {Title = \u0027Kill Mobs\u0027, Default = false, Callback = function(V) getgenv().KillMobs = V; if V then task.spawn(function() while getgenv().KillMobs do pcall(function() for _, obj in ipairs(workspace:GetChildren()) do if obj.Name:find(\u0027LocalMob$\u0027) then local hum = obj:FindFirstChildOfClass(\u0027Humanoid\u0027); if hum then hum.Health = 0 end end end end); task.wait(0.1) end end) end end})"
+                }
+            ]
+        },
+        {
+            "Title": "Items",
+            "Elements": [
+                {
+                    "Type": "Section",
+                    "Title": "Swords"
+                },
+                {
+                    "Type": "Logic",
+                    "Script": "local folder = workspace:FindFirstChild(\u0027StaffButtons\u0027); local items = {}; local itemMap = {}; if folder then for _, child in ipairs(folder:GetChildren()) do local n = child.Name:match(\u0027(%d+)$\u0027); if n then items[#items+1] = {Name = child.Name, Num = tonumber(n)} end end; table.sort(items, function(a, b) return a.Num \u003c b.Num end); local list = {}; for _, v in ipairs(items) do local key = tostring(v.Num); list[#list+1] = key; itemMap[key] = v.Name end; getgenv().SelectedItem = list[1] or \u0027\u0027; getgenv().ItemList = list; getgenv().ItemMap = itemMap; Value:AddDropdown(\u0027ItemSelect\u0027, {Title = \u0027Items\u0027, Values = list, Default = getgenv().SelectedItem, Callback = function(V) getgenv().SelectedItem = V end}); Value:AddButton({Title = \u0027Take Item\u0027, Callback = function() local name = getgenv().ItemMap[getgenv().SelectedItem]; if not name then return end; local item = workspace.StaffButtons:FindFirstChild(name); if not item then return end; local o=item:FindFirstChild(\u0027Color\u0027);if o then local v;if o:IsA(\u0027Color3Value\u0027)then v=o.Value elseif o:IsA(\u0027BrickColorValue\u0027)then v=o.Value.Color elseif o:IsA(\u0027BasePart\u0027)then v=o.Color end;if v and v.R==98/255 and v.G==37/255 and v.B==209/255 then return end end; local tp = item:FindFirstChild(\u0027TouchPart\u0027); if not tp then return end; local lp = game.Players.LocalPlayer; local ch = lp and lp.Character; local rt = ch and ch:FindFirstChild(\u0027HumanoidRootPart\u0027); if not rt then return end; firetouchinterest(rt, tp, 0); task.wait(); firetouchinterest(rt, tp, 1) end}) end"
+                },
+                {
+                    "Type": "Logic",
+                    "Script": "Value:AddToggle(\u0027AutoTakeItem\u0027, {Title = \u0027Auto Take Item\u0027, Default = false, Callback = function(V) getgenv().AutoTakeItem = V; if V then task.spawn(function() while getgenv().AutoTakeItem do pcall(function() local name = getgenv().ItemMap[getgenv().SelectedItem]; if not name then return end; local item = workspace.StaffButtons:FindFirstChild(name); if not item then return end; local o=item:FindFirstChild(\u0027Color\u0027);if o then local v;if o:IsA(\u0027Color3Value\u0027)then v=o.Value elseif o:IsA(\u0027BrickColorValue\u0027)then v=o.Value.Color elseif o:IsA(\u0027BasePart\u0027)then v=o.Color end;if v and v.R==98/255 and v.G==37/255 and v.B==209/255 then return end end; local tp = item:FindFirstChild(\u0027TouchPart\u0027); if not tp then return end; local lp = game.Players.LocalPlayer; local ch = lp and lp.Character; local rt = ch and ch:FindFirstChild(\u0027HumanoidRootPart\u0027); if not rt then return end; firetouchinterest(rt, tp, 0); task.wait(); firetouchinterest(rt, tp, 1) end); task.wait(0.5) end end) end end})"
+                }
+            ]
+        },
+        {
+            "Title": "Eggs",
+            "Elements": [
+                {
+                    "Type": "Section",
+                    "Title": "Egg"
+                },
+                {
+                    "Type": "Logic",
+                    "Script": "local folder = workspace:FindFirstChild(\u0027Eggs\u0027); local list = {}; if folder then for _, child in ipairs(folder:GetChildren()) do list[#list+1] = child.Name end; table.sort(list) end; getgenv().SelectedEgg = list[1] or \u0027\u0027; local function tpEgg(n) local e=workspace.Eggs:FindFirstChild(n);if not e then return end;local p=e:GetPivot().Position;local lp=game.Players.LocalPlayer;local ch=lp and lp.Character;local rt=ch and ch:FindFirstChild(\u0027HumanoidRootPart\u0027);if not rt then return end;if (rt.Position-p).Magnitude\u003e15 then rt.CFrame=CFrame.new(p)*CFrame.new(0,5,0) end end; Value:AddDropdown(\u0027EggSelect\u0027, {Title = \u0027Select Egg\u0027, Values = list, Default = getgenv().SelectedEgg, Callback = function(V) getgenv().SelectedEgg = V end}); Value:AddButton({Title = \u0027Buy Egg\u0027, Callback = function() if getgenv().SelectedEgg and getgenv().SelectedEgg ~= \u0027\u0027 then tpEgg(getgenv().SelectedEgg);game:GetService(\u0027ReplicatedStorage\u0027).Remotes.OpenEgg:InvokeServer(getgenv().SelectedEgg) end end}); Value:AddToggle(\u0027AutoBuyEgg\u0027, {Title = \u0027Auto Buy Egg\u0027, Default = false, Callback = function(V) getgenv().AutoBuyEgg = V; if V then task.spawn(function() while getgenv().AutoBuyEgg do pcall(function() if getgenv().SelectedEgg and getgenv().SelectedEgg ~= \u0027\u0027 then tpEgg(getgenv().SelectedEgg);game:GetService(\u0027ReplicatedStorage\u0027).Remotes.OpenEgg:InvokeServer(getgenv().SelectedEgg) end end); task.wait(0.1) end end) end end})"
+                }
+            ]
+        }
+    ]
+}

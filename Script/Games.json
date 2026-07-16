@@ -182,5 +182,24 @@
         "version": "1.0.1",
         "status": "1",
         "category": "Simulator"
+    },
+    "Magic Evolution": {
+        "id": "116223724643557",
+        "name": "+1 Magic Evolution",
+        "version": "1.0.0",
+        "status": "1",
+        "category": "Simulator",
+        "subplaces": {
+            "InGame": {
+                "id": "116223724643557",
+                "name": "+1 Magic Evolution",
+                "path": "MagicEvolution/InGame.json"
+            },
+            "DUNGEON": {
+                "id": "140070560575882",
+                "name": "DUNGEON",
+                "path": "MagicEvolution/dongeon.json"
+            }
+        }
     }
 }
