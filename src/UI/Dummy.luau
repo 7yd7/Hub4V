@@ -1,5 +1,5 @@
 local Library = loadstring(game:HttpGet("https://raw.githubusercontent.com/x2zu/OPEN-SOURCE-UI-ROBLOX/refs/heads/main/X2ZU%20UI%20ROBLOX%20OPEN%20SOURCE/DummyUi-leak-by-x2zu/fetching-main/Tools/Framework.luau"))()
-local Engine = loadstring(game:HttpGet(getgenv().NEXS_BASE_URL .. "/src/Core/Engine.luau"))()
+local Engine = loadstring(getgenv().NEXS_PACKAGE and getgenv().NEXS_PACKAGE["src/Core/Engine.luau"] or game:HttpGet(getgenv().NEXS_BASE_URL .. "/src/Core/Engine.luau"))()
 
 local Adapter = {
     Options = {},

@@ -1,8 +1,8 @@
 local HttpService = game:GetService("HttpService")
-local Engine = loadstring(game:HttpGet(getgenv().NEXS_BASE_URL .. "/src/Core/Engine.luau"))()
+local Engine = loadstring(getgenv().NEXS_PACKAGE and getgenv().NEXS_PACKAGE["src/Core/Engine.luau"] or game:HttpGet(getgenv().NEXS_BASE_URL .. "/src/Core/Engine.luau"))()
 
 local repo = "https://raw.githubusercontent.com/deividcomsono/Obsidian/main/"
-local Library = loadstring(game:HttpGet(getgenv().NEXS_BASE_URL .. "/src/Library/Obsidian.luau"))()
+local Library = loadstring(getgenv().NEXS_PACKAGE and getgenv().NEXS_PACKAGE["src/Library/Obsidian.luau"] or game:HttpGet(getgenv().NEXS_BASE_URL .. "/src/Library/Obsidian.luau"))()
 local ThemeManager = loadstring(game:HttpGet(repo .. "addons/ThemeManager.lua"))()
 local SaveManager = loadstring(game:HttpGet(repo .. "addons/SaveManager.lua"))()
 

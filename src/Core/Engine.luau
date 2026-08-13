@@ -31,6 +31,10 @@ function Engine.GetBaseUrl()
 end
 
 function Engine.Fetch(path)
+    local pkg = getgenv().NEXS_PACKAGE
+    if pkg and typeof(pkg[path]) == "string" then
+        return pkg[path]
+    end
     local baseUrl = Engine.GetBaseUrl()
     local s, r = pcall(function() return game:HttpGet(baseUrl .. "/" .. path) end)
     return s and r or nil
@@ -46,6 +50,21 @@ function Engine.GetIcon(name)
         
         local fileName = tostring(name) .. ".png"
         local localPath = Engine.AssetFolder .. "/" .. fileName
+
+        local pkg = getgenv().NEXS_PACKAGE
+        local b64 = getgenv().NEXS_B64DECODE and pkg and pkg["Assets/icon/" .. fileName]
+        if b64 then
+            ensureFolders()
+            local okD, data = pcall(getgenv().NEXS_B64DECODE, b64)
+            if okD and data then
+                pcall(function() writefile(localPath, data) end)
+                local s, asset = pcall(function() return getcustomasset(localPath) end)
+                if s and asset then
+                    iconCache[name] = asset
+                    return asset
+                end
+            end
+        end
 
         if isfile(localPath) then
             local s, asset = pcall(function() return getcustomasset(localPath) end)

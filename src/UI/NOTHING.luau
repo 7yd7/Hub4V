@@ -1,5 +1,5 @@
-local Library = loadstring(game:HttpGet(getgenv().NEXS_BASE_URL .. "/src/Library/NOTHING.luau"))()
-local Engine = loadstring(game:HttpGet(getgenv().NEXS_BASE_URL .. "/src/Core/Engine.luau"))()
+local Library = loadstring(getgenv().NEXS_PACKAGE and getgenv().NEXS_PACKAGE["src/Library/NOTHING.luau"] or game:HttpGet(getgenv().NEXS_BASE_URL .. "/src/Library/NOTHING.luau"))()
+local Engine = loadstring(getgenv().NEXS_PACKAGE and getgenv().NEXS_PACKAGE["src/Core/Engine.luau"] or game:HttpGet(getgenv().NEXS_BASE_URL .. "/src/Core/Engine.luau"))()
 
 local Adapter = {
     Options = {},
