@@ -13,22 +13,23 @@ export default {
         return env.ASSETS.fetch(request);
       }
 
-      const rawUrl = "https://raw.githubusercontent.com/7yd7/Hub4V/Menu/client.luau";
+      const versionUrl = "https://raw.githubusercontent.com/7yd7/Hub4V/Menu/Script/Version.json";
       try {
-        const res = await fetch(rawUrl, { cf: { cacheTtl: 60, cacheEverything: true } });
-        
-        if (!res.ok) {
-          return new Response("-- failed to load script from github", { status: 502 });
-        }
-        
-        const text = await res.text();
-        return new Response(text, {
-          headers: {
-            "content-type": "text/plain; charset=utf-8",
-            "cache-control": "no-store",
-            "x-content-type-options": "nosniff"
-          }
+        const res = await fetch(versionUrl, {
+          headers: { "User-Agent": "Hub4V-Worker" }
         });
+
+        if (!res.ok) {
+          return new Response("-- failed to load version file", { status: 502 });
+        }
+
+        const version = await res.json();
+        const releaseUrl = version && version.latest_release;
+        if (!releaseUrl || typeof releaseUrl !== "string") {
+          return new Response("-- latest_release missing in Version.json", { status: 502 });
+        }
+
+        return Response.redirect(releaseUrl, 302);
       } catch (err) {
         return new Response(`-- fetch error: ${err.message}`, { status: 500 });
       }
