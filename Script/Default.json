@@ -31,6 +31,29 @@
                 {
                     "Type": "Logic",
                     "Script": "local title = 'Welcome, ' .. game.Players.LocalPlayer.Name; Value:AddParagraph({Title = title, Content = 'Enjoy the 7yd7 Hub Experience.'}); local stats = Value:AddParagraph({Title = 'Session Statistics', Content = 'Loading...'}); task.spawn(function() local startTime = tick(); while task.wait(1) do local elapsed = tick() - startTime; local mins = math.floor(elapsed / 60); local secs = math.floor(elapsed % 60); local fps = math.floor(workspace:GetRealPhysicsFPS()); local ping = math.floor(game:GetService('Stats').Network.ServerStatsItem['Data Ping']:GetValueString():match('%d+')); local playerCount = #game.Players:GetPlayers(); stats:SetDesc('⏳ Uptime: '..string.format('%02d:%02d', mins, secs)..'\\n👥 Players: '..playerCount..'\\n🎮 FPS: '..fps..' | 📡 Ping: '..ping..'ms'); end end)"
+                },
+                {
+                    "Type": "Section",
+                    "Title": "Links & Support",
+                    "Icon": "I-link"
+                },
+                {
+                    "Type": "Button",
+                    "Title": "Copy Website Link",
+                    "Description": "Copy the official 7yd7 Hub website",
+                    "Script": "local link = 'https://7yd7.pages.dev/'; if setclipboard then setclipboard(link) end; if getgenv().NexsNotifications then getgenv().NexsNotifications.Notify('Copied', 'Website link copied to clipboard!', 3) end"
+                },
+                {
+                    "Type": "Button",
+                    "Title": "Copy GitHub Link",
+                    "Description": "Copy the official 7yd7 Hub GitHub repository",
+                    "Script": "local link = 'https://github.com/7yd7/Hub4V'; if setclipboard then setclipboard(link) end; if getgenv().NexsNotifications then getgenv().NexsNotifications.Notify('Copied', 'GitHub link copied to clipboard!', 3) end"
+                },
+                {
+                    "Type": "Button",
+                    "Title": "Copy Discord Link",
+                    "Description": "Copy the 7yd7 Hub Discord server invite",
+                    "Script": "local link = 'https://discord.com/invite/kRfzv2kV7X'; if setclipboard then setclipboard(link) end; if getgenv().NexsNotifications then getgenv().NexsNotifications.Notify('Copied', 'Discord link copied to clipboard!', 3) end"
                 }
             ]
         },
