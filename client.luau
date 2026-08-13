@@ -2,6 +2,10 @@ local BASE_URL = "https://raw.githubusercontent.com/7yd7/Hub4V/Menu/"
 getgenv().NEXS_BASE_URL = BASE_URL
 
 local function import(path)
+	local pkg = getgenv().NEXS_PACKAGE
+	if pkg and typeof(pkg[path]) == "string" then
+		return loadstring(pkg[path])()
+	end
 	local fullUrl = BASE_URL .. "/" .. path
 	local success, content = pcall(function() return game:HttpGet(fullUrl) end)
 	if not success then warn("Failed to import: " .. path) return nil end
