@@ -455,6 +455,10 @@ function Engine.LoadAndBuild(adapter)
                 local cm = CM.new(Options)
                 cm:SetFolder("7yd7Hub/configs")
                 cm:IgnoreIndexes({ "_CMSaveAs", "_CMDropdown" })
+                local function notify(title, msg)
+                    local N = getgenv().NexsNotifications
+                    if N and N.Notify then pcall(function() N.Notify(title, msg, 3) end) end
+                end
                 Value:AddInput("_CMSaveAs", { Title = "Config Name", Placeholder = "Enter config name..." })
                 local saveInput = Options["_CMSaveAs"]
                 local selected
@@ -482,6 +486,7 @@ function Engine.LoadAndBuild(adapter)
                             if dd.SetValue then dd:SetValue(name) end
                         end
                         selected = name
+                        notify("Config Saved", "Saved as '" .. name .. "'")
                     end
                 end
                 Value:AddButton({ Title = "Save As", Callback = onSave })
@@ -491,13 +496,13 @@ function Engine.LoadAndBuild(adapter)
                     if dd and dd.SetValues then dd:SetValues(nl) end
                 end
                 Value:AddButton({ Title = "Load", Callback = function()
-                    if selected and selected ~= "No configs" then cm:Load(selected) end
+                    if selected and selected ~= "No configs" then cm:Load(selected); notify("Config Loaded", "Loaded '" .. selected .. "'") end
                 end })
                 Value:AddButton({ Title = "Overwrite", Callback = function()
-                    if selected and selected ~= "No configs" then cm:Save(selected) end
+                    if selected and selected ~= "No configs" then cm:Save(selected); notify("Config Saved", "Overwrote '" .. selected .. "'") end
                 end })
                 Value:AddButton({ Title = "Delete", Callback = function()
-                    if selected and selected ~= "No configs" then cm:Delete(selected); refreshDD(); selected = nil end
+                    if selected and selected ~= "No configs" then cm:Delete(selected); refreshDD(); selected = nil; notify("Config Deleted", "Deleted config") end
                 end })
                 local resetBusy = false
                 Value:AddButton({ Title = "Reset All", Callback = function()
@@ -525,6 +530,7 @@ function Engine.LoadAndBuild(adapter)
                         end
                     end
                     resetBusy = false
+                    notify("Settings Reset", "All options reset to defaults")
                 end })
                 Value:AddSection({ Title = "Autoload Config", Icon = GetIcon("I-cloud") })
                 local autoloadPara = Value:AddParagraph({ Title = "", Content = "Current autoload config: " .. (cm:GetAutoloadConfig() or "none") })
@@ -538,11 +544,13 @@ function Engine.LoadAndBuild(adapter)
                     if selected and selected ~= "No configs" then
                         cm:SetAutoloadConfig(selected)
                         updateAutoloadText()
+                        notify("Autoload Set", "Autoload config set to '" .. selected .. "'")
                     end
                 end })
                 Value:AddButton({ Title = "Reset Autoload", Callback = function()
                     cm:ResetAutoloadConfig()
                     updateAutoloadText()
+                    notify("Autoload Cleared", "Autoload config removed")
                 end })
                 cm:LoadAutoloadConfig()
                 getgenv()._ConfigManager = cm

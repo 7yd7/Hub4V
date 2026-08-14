@@ -196,9 +196,11 @@ function Adapter:AddTab(config)
                 if not ok and d and d.Select then
                     pcall(function() d:Select(value) end)
                 end
-                notifyChanged(lastKnownValue)
-                if el.Callback then
-                    pcall(function() el.Callback(lastKnownValue) end)
+                if not ok then
+                    notifyChanged(lastKnownValue)
+                    if el.Callback then
+                        pcall(function() el.Callback(lastKnownValue) end)
+                    end
                 end
             end,
             OnChanged = function(self, fn)
