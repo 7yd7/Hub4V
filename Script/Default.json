@@ -72,11 +72,23 @@
                     "Script": "local hum = game.Players.LocalPlayer.Character:FindFirstChild('Humanoid'); local startSpeed = hum and hum.WalkSpeed or 16; local startJump = hum and hum.JumpPower or 50; Value:AddSlider('WalkSpeed', {Title = 'WalkSpeed', Min = 16, Max = 500, Default = startSpeed, Rounding = 0, Callback = function(V) if hum then hum.WalkSpeed = V end end}); Value:AddButton({Title = 'Reset Speed', Description = 'Returns speed to default', Callback = function() if hum then hum.WalkSpeed = 16; Options.WalkSpeed:SetValue(16) end end}); Value:AddSlider('JumpPower', {Title = 'JumpPower', Min = 50, Max = 500, Default = startJump, Rounding = 0, Callback = function(V) if hum then hum.JumpPower = V; hum.UseJumpPower = true end end}); Value:AddButton({Title = 'Reset Jump', Description = 'Returns jump to default', Callback = function() if hum then hum.JumpPower = 50; Options.JumpPower:SetValue(50) end end})"
                 },
                 {
+                    "Type": "Dropdown",
+                    "Id": "FlyMode",
+                    "Title": "Fly Mode",
+                    "Values": [
+                        "BodyVelocity",
+                        "CFrame",
+                        "Paralyzed"
+                    ],
+                    "Default": "BodyVelocity",
+                    "Script": "getgenv().FlyType = Value"
+                },
+                {
                     "Type": "Toggle",
                     "Id": "FlyEnabled",
                     "Title": "Enable Fly",
                     "Default": false,
-                    "Script": "local plr = game.Players.LocalPlayer; local mouse = plr:GetMouse(); if Value then if not getgenv().FlySpeed then getgenv().FlySpeed = 50 end; getgenv().FlyConn = game:GetService('RunService').RenderStepped:Connect(function() local root = plr.Character and plr.Character:FindFirstChild('HumanoidRootPart'); if not root then return end; local cam = workspace.CurrentCamera; local bv = root:FindFirstChild('FlyVel') or Instance.new('BodyVelocity', root); bv.Name = 'FlyVel'; bv.MaxForce = Vector3.new(1e9, 1e9, 1e9); local move = Vector3.zero; local uis = game:GetService('UserInputService'); if uis:IsKeyDown(Enum.KeyCode.W) then move = move + cam.CFrame.LookVector end; if uis:IsKeyDown(Enum.KeyCode.S) then move = move - cam.CFrame.LookVector end; if uis:IsKeyDown(Enum.KeyCode.A) then move = move - cam.CFrame.RightVector end; if uis:IsKeyDown(Enum.KeyCode.D) then move = move + cam.CFrame.RightVector end; if uis:IsKeyDown(Enum.KeyCode.Space) then move = move + Vector3.new(0, 1, 0) end; if uis:IsKeyDown(Enum.KeyCode.LeftControl) then move = move - Vector3.new(0, 1, 0) end; bv.Velocity = move * getgenv().FlySpeed; end) else if getgenv().FlyConn then getgenv().FlyConn:Disconnect(); getgenv().FlyConn = nil end; local root = plr.Character and plr.Character:FindFirstChild('HumanoidRootPart'); if root and root:FindFirstChild('FlyVel') then root.FlyVel:Destroy() end end"
+                    "Script": "local plr = game.Players.LocalPlayer; if Value then if not getgenv().FlySpeed then getgenv().FlySpeed = 50 end; getgenv().FlyConn = game:GetService('RunService').RenderStepped:Connect(function() local root = plr.Character and plr.Character:FindFirstChild('HumanoidRootPart'); if not root then return end; local cam = workspace.CurrentCamera; local uis = game:GetService('UserInputService'); local speed = getgenv().FlySpeed or 50; local mode = getgenv().FlyType or 'BodyVelocity'; local move = Vector3.zero; if uis:IsKeyDown(Enum.KeyCode.W) then move = move + cam.CFrame.LookVector end; if uis:IsKeyDown(Enum.KeyCode.S) then move = move - cam.CFrame.LookVector end; if uis:IsKeyDown(Enum.KeyCode.A) then move = move - cam.CFrame.RightVector end; if uis:IsKeyDown(Enum.KeyCode.D) then move = move + cam.CFrame.RightVector end; if uis:IsKeyDown(Enum.KeyCode.Space) then move = move + Vector3.new(0, 1, 0) end; if uis:IsKeyDown(Enum.KeyCode.LeftControl) then move = move - Vector3.new(0, 1, 0) end; if mode == 'CFrame' or mode == 'Paralyzed' then if move.Magnitude > 0 then root.CFrame = root.CFrame + (move.Unit * speed / 20) end; if mode == 'Paralyzed' then local hum = plr.Character and plr.Character:FindFirstChildOfClass('Humanoid'); if hum and not hum.PlatformStand then hum.PlatformStand = true end end else local bv = root:FindFirstChild('FlyVel') or Instance.new('BodyVelocity', root); bv.Name = 'FlyVel'; bv.MaxForce = Vector3.new(1e9, 1e9, 1e9); bv.Velocity = move * speed end end) else if getgenv().FlyConn then getgenv().FlyConn:Disconnect(); getgenv().FlyConn = nil end; local root = plr.Character and plr.Character:FindFirstChild('HumanoidRootPart'); if root and root:FindFirstChild('FlyVel') then root.FlyVel:Destroy() end; local hum = plr.Character and plr.Character:FindFirstChildOfClass('Humanoid'); if hum and hum.PlatformStand then hum.PlatformStand = false end end"
                 },
                 {
                     "Type": "Slider",
