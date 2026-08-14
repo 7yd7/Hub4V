@@ -458,6 +458,11 @@ function Engine.LoadAndBuild(adapter)
                 Value:AddInput("_CMSaveAs", { Title = "Config Name", Placeholder = "Enter config name..." })
                 local saveInput = Options["_CMSaveAs"]
                 local selected
+                local list = cm:List()
+                if #list == 0 then list = {"No configs"} end
+                selected = list[1]
+                Value:AddDropdown("_CMDropdown", { Title = "Config List", Values = list, Default = selected, Callback = function(v) selected = v end })
+                local dd = Options["_CMDropdown"]
                 local function unique(name)
                     if not cm:Exists(name) then return name end
                     local n = 1
@@ -474,16 +479,12 @@ function Engine.LoadAndBuild(adapter)
                             local nl = cm:List()
                             if #nl == 0 then nl = {"No configs"} end
                             dd:SetValues(nl)
+                            if dd.SetValue then dd:SetValue(name) end
                         end
-                        if dd then selected = name end
+                        selected = name
                     end
                 end
                 Value:AddButton({ Title = "Save As", Callback = onSave })
-                local list = cm:List()
-                if #list == 0 then list = {"No configs"} end
-                selected = list[1]
-                Value:AddDropdown("_CMDropdown", { Title = "Config List", Values = list, Default = selected, Callback = function(v) selected = v end })
-                local dd = Options["_CMDropdown"]
                 local function refreshDD()
                     local nl = cm:List()
                     if #nl == 0 then nl = {"No configs"} end
